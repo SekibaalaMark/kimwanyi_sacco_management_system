@@ -26,4 +26,26 @@ public class UserService {
 
         userDAO.saveUser(user);
     }
+
+
+    public User authenticate(String username, String plainTextPassword) throws Exception {
+        User user = userDAO.findByUsername(username);
+
+        // RULE: Guard against non-existent accounts
+        if (user == null) {
+            throw new Exception("Invalid username or password.");
+        }
+
+        // RULE: Guard against deactivated accounts (Can be deactivated by admin but not deleted)
+        if (!user.isActive()) {
+            throw new Exception("This account has been deactivated. Please contact the administrator.");
+        }
+
+        // Secure verification using jBcrypt
+        if (!user.checkPassword(plainTextPassword)) {
+            throw new Exception("Invalid username or password.");
+        }
+
+        return user;
+    }
 }
