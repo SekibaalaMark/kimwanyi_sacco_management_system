@@ -1,0 +1,13 @@
+<!-- src/main/webapp/member/dashboard.xhtml -->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html" xmlns:p="http://primefaces.org/ui">
+<h:head><title>Member Dashboard</title></h:head>
+<h:body>
+    <h:form>
+        <p:card style="margin:2rem;">
+            <h1>Welcome to your Savings Portal, #{authBean.currentUser.username}!</h1>
+            <p>Your National ID: #{authBean.currentUser.nationalId}</p>
+            <p:commandButton value="Logout" action="#{authBean.logout}" styleClass="ui-button-danger"/>
+        </p:card>
+    </h:form>
+</h:body>
+</html>
