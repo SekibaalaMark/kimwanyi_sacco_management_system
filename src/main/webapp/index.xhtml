@@ -3,16 +3,49 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
       xmlns:p="http://primefaces.org/ui">
 
 <h:head>
-    <title>Savings Group Test</title>
+    <title>Login - Savings Group System</title>
 </h:head>
-<h:body>
-    <p:card style="width: 25rem; margin: 2em auto;">
-        <h1>It Works!</h1>
-        <p>JSF and PrimeFaces are running smoothly.</p>
-        <p:button value="Awesome" icon="pi pi-check" />
-    </p:card>
+<h:body style="background-color: #f4f6f9; font-family: Arial, sans-serif;">
+
+    <h:form id="loginForm">
+        <p:card style="width: 400px; margin: 8rem auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <f:facet name="title">
+                <div style="text-align: center; margin-bottom: 1rem;">Savings Group Login</div>
+            </f:facet>
+
+            <p:messages id="messages" showDetail="true" closable="true">
+                <p:autoUpdate />
+            </p:messages>
+
+            <div class="ui-fluid">
+                <!-- Username -->
+                <div class="field" style="margin-bottom: 1.5rem;">
+                    <p:outputLabel for="username" value="Username" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
+                    <p:inputText id="username" value="#{authBean.username}" required="true"
+                                 requiredMessage="Please enter your username." icon="pi pi-user"/>
+                </div>
+
+                <!-- Password -->
+                <div class="field" style="margin-bottom: 2rem;">
+                    <p:outputLabel for="password" value="Password" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
+                    <p:password id="password" value="#{authBean.password}" required="true"
+                                requiredMessage="Please enter your password." toggleMask="true" feedback="false"/>
+                </div>
+            </div>
+
+            <!-- Login Action Button -->
+            <p:commandButton value="Sign In" action="#{authBean.login}"
+                             update="loginForm" icon="pi pi-sign-in" styleClass="ui-button-primary" />
+
+            <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9em;">
+                New to the group? <p:link href="register.xhtml" value="Register here as a member"/>
+            </div>
+        </p:card>
+    </h:form>
+
 </h:body>
 </html>
