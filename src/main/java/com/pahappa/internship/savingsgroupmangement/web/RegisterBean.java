@@ -1,4 +1,4 @@
-package com.pahappa.internship.savingsgroupmangement;
+package com.pahappa.internship.savingsgroupmangement.web;
 
 import com.pahappa.internship.savingsgroupmangement.model.User;
 import com.pahappa.internship.savingsgroupmangement.service.UserService;
