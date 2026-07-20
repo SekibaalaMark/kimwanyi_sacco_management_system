@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Member Registration - Savings Group</title>
+</h:head>
+<h:body style="background-color: #f4f6f9; font-family: Arial, sans-serif;">
+
+    <h:form id="registerForm">
+        <p:card style="width: 450px; margin: 5rem auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <f:facet name="title">
+                <div style="text-align: center; margin-bottom: 1rem;">Create Member Account</div>
+            </f:facet>
+
+            <!-- Global dynamic status notifications -->
+            <p:messages id="messages" showDetail="true" closable="true">
+                <p:autoUpdate />
+            </p:messages>
+
+            <div class="ui-fluid">
+                <!-- National ID Input -->
+                <div class="field style-margin" style="margin-bottom: 1.5rem;">
+                    <p:outputLabel for="nationalId" value="National ID / Membership Number" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
+                    <p:inputText id="nationalId" value="#{registerBean.user.nationalId}" required="true"
+                                 requiredMessage="National ID is required." placeholder="e.g. CM12345678">
+                        <f:validateLength minimum="4" maximum="30"/>
+                    </p:inputText>
+                </div>
+
+                <!-- Username Input -->
+                <div class="field style-margin" style="margin-bottom: 1.5rem;">
+                    <p:outputLabel for="username" value="Username" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
+                    <p:inputText id="username" value="#{registerBean.user.username}" required="true"
+                                 requiredMessage="Username is required." placeholder="Choose a unique username">
+                        <f:validateLength minimum="3" maximum="50"/>
+                    </p:inputText>
+                </div>
+
+                <!-- Password Input -->
+                <div class="field style-margin" style="margin-bottom: 2rem;">
+                    <p:outputLabel for="password" value="Password" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
+                    <p:password id="password" value="#{registerBean.user.password}" required="true"
+                                requiredMessage="Password is required." feedback="true" inline="true"
+                                placeholder="Secure password" toggleMask="true"/>
+                </div>
+            </div>
+
+            <!-- Submit Action -->
+            <p:commandButton value="Register as Member" action="#{registerBean.register}"
+                             update="registerForm" icon="pi pi-user-plus" styleClass="ui-button-success" />
+
+            <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9em;">
+                Already have an account? <p:link href="index.xhtml" value="Login here"/>
+            </div>
+        </p:card>
+    </h:form>
+
+</h:body>
+</html>
