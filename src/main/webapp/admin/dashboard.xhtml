@@ -1,13 +1,108 @@
-<!-- src/main/webapp/admin/dashboard.xhtml -->
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html" xmlns:p="http://primefaces.org/ui">
-<h:head><title>Admin Dashboard</title></h:head>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+    <title>Admin Dashboard - Management Console</title>
+    <h:outputStylesheet name="css/layout.css" />
+</h:head>
+
 <h:body>
-    <h:form>
-        <p:card style="margin:2rem;">
-            <h1>Management Console (ADMIN)</h1>
-            <p>Logged in as: #{authBean.currentUser.username}</p>
-            <p:commandButton value="Logout" action="#{authBean.logout}" styleClass="ui-button-danger"/>
-        </p:card>
-    </h:form>
+    <p:growl id="msg" showDetail="true" life="4000" />
+
+    <div style="padding: 20px; max-width: 1300px; margin: 0 auto;">
+        <!-- Header -->
+        <h:form id="adminHeader">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px;">
+                <div>
+                    <h2>Admin Management Console</h2>
+                    <p style="margin: 0; color: #7f8c8d;">Logged in as: <strong>#{authBean.currentUser.username}</strong></p>
+                </div>
+                <p:commandButton value="Logout" action="#{authBean.logout}" icon="pi pi-sign-out" styleClass="ui-button-danger" />
+            </div>
+        </h:form>
+
+        <!-- Pending Approvals Section -->
+        <p:panel header="Pending Loan Applications" style="margin-bottom: 30px;">
+            <h:form id="pendingForm">
+                <p:dataTable var="loan" value="#{adminLoanBean.pendingLoans}" emptyMessage="No pending loan applications requiring review.">
+                    <p:column headerText="Loan ID" style="width: 80px; text-align: center;">
+                        <h:outputText value="##{loan.id}" />
+                    </p:column>
+
+                    <p:column headerText="Member ID" style="width: 100px; text-align: center;">
+                        <h:outputText value="#{loan.memberId}" />
+                    </p:column>
+
+                    <p:column headerText="Requested Principal">
+                        <h:outputText value="#{loan.principalAmount}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Total Repayable (10%)">
+                        <h:outputText value="#{loan.totalAmount}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Application Date">
+                        <h:outputText value="#{loan.appliedAt}">
+                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" type="localDateTime" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Rejection Reason (If rejecting)" style="width: 250px;">
+                        <p:inputText value="#{adminLoanBean.rejectionReason}" placeholder="Reason for rejection..." style="width: 100%;" />
+                    </p:column>
+
+                    <p:column headerText="Actions" style="width: 200px; text-align: center;">
+                        <p:commandButton value="Approve" action="#{adminLoanBean.handleApprove(loan.id)}" update=":msg :pendingForm :allLoansForm" icon="pi pi-check" styleClass="ui-button-success ui-button-sm" style="margin-right: 5px;" />
+                        <p:commandButton value="Reject" action="#{adminLoanBean.handleReject(loan.id)}" update=":msg :pendingForm :allLoansForm" icon="pi pi-times" styleClass="ui-button-danger ui-button-sm" />
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:panel>
+
+        <!-- System All Loans Audit Trail -->
+        <p:panel header="System-Wide Loan Audit Trail">
+            <h:form id="allLoansForm">
+                <p:dataTable var="loan" value="#{adminLoanBean.allLoans}" rows="10" paginator="true" emptyMessage="No loan records found in system.">
+                    <p:column headerText="Loan ID" style="width: 80px; text-align: center;">
+                        <h:outputText value="##{loan.id}" />
+                    </p:column>
+                    <p:column headerText="Member ID" style="width: 100px; text-align: center;">
+                        <h:outputText value="#{loan.memberId}" />
+                    </p:column>
+                    <p:column headerText="Principal">
+                        <h:outputText value="#{loan.principalAmount}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Total Owed">
+                        <h:outputText value="#{loan.totalAmount}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Amount Paid">
+                        <h:outputText value="#{loan.amountPaid}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Status" style="text-align: center;">
+                        <span style="padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; background-color: #{loan.status == 'APPROVED' ? '#2ecc71' : (loan.status == 'PENDING' ? '#f39c12' : (loan.status == 'PAID' ? '#3498db' : '#e74c3c'))};">
+                            <h:outputText value="#{loan.status}" />
+                        </span>
+                    </p:column>
+                    <p:column headerText="Rejection Reason">
+                        <h:outputText value="#{loan.rejectionReason != null ? loan.rejectionReason : 'N/A'}" />
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:panel>
+    </div>
 </h:body>
 </html>
