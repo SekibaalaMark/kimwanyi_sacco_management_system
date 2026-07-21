@@ -53,4 +53,20 @@ public class UserDAO {
             return query.uniqueResult();
         }
     }
+
+
+
+    /**
+     * Counts the total number of registered accounts in the system.
+     */
+    public long countAll() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT COUNT(u) FROM User u";
+            Long count = session.createQuery(hql, Long.class).uniqueResult();
+            return count != null ? count : 0L;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
 }

@@ -6,79 +6,95 @@
       xmlns:p="http://primefaces.org/ui">
 
 <h:head>
-    <title>Admin Dashboard - Management Console</title>
+    <title>Admin Operations Center - Secure Ledger</title>
     <h:outputStylesheet name="css/layout.css" />
+    <style>
+        .kpi-container { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; }
+        .kpi-card { flex: 1; min-width: 220px; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 5px solid #2980b9; }
+        .kpi-title { font-size: 0.85em; color: #7f8c8d; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+        .kpi-value { font-size: 1.8em; font-weight: bold; color: #2c3e50; }
+        .kpi-green { border-left-color: #2ecc71; }
+        .kpi-orange { border-left-color: #f39c12; }
+        .kpi-red { border-left-color: #e74c3c; }
+        .kpi-purple { border-left-color: #9b59b6; }
+    </style>
 </h:head>
 
 <h:body>
     <p:growl id="msg" showDetail="true" life="4000" />
 
     <div style="padding: 20px; max-width: 1300px; margin: 0 auto;">
+
         <!-- Header -->
-        <h:form id="adminHeader">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px;">
+        <h:form id="adminHeaderForm">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ccc; padding-bottom: 12px; margin-bottom: 25px;">
                 <div>
-                    <h2>Admin Management Console</h2>
-                    <p style="margin: 0; color: #7f8c8d;">Logged in as: <strong>#{authBean.currentUser.username}</strong></p>
+                    <h2 style="margin: 0; color: #2c3e50;">Admin Operations Dashboard</h2>
+                    <span style="color: #7f8c8d;">Group Financial Summary &amp; Decision Hub</span>
                 </div>
-                <p:commandButton value="Logout" action="#{authBean.logout}" icon="pi pi-sign-out" styleClass="ui-button-danger" />
+                <div>
+                    <p:commandButton value="Refresh Analytics" action="#{adminDashboardBean.refreshDashboard}" update=":kpiForm :pendingLoansForm" icon="pi pi-refresh" styleClass="ui-button-outlined ui-button-secondary" style="margin-right: 10px;" />
+                    <p:commandButton value="Logout" action="#{authBean.logout}" icon="pi pi-sign-out" styleClass="ui-button-danger" />
+                </div>
             </div>
         </h:form>
 
-        <!-- Pending Approvals Section -->
-        <p:panel header="Pending Loan Applications" style="margin-bottom: 30px;">
-            <h:form id="pendingForm">
-                <p:dataTable var="loan" value="#{adminLoanBean.pendingLoans}" emptyMessage="No pending loan applications requiring review.">
-                    <p:column headerText="Loan ID" style="width: 80px; text-align: center;">
-                        <h:outputText value="##{loan.id}" />
-                    </p:column>
-
-                    <p:column headerText="Member ID" style="width: 100px; text-align: center;">
-                        <h:outputText value="#{loan.memberId}" />
-                    </p:column>
-
-                    <p:column headerText="Requested Principal">
-                        <h:outputText value="#{loan.principalAmount}">
+        <!-- KPI Summary Metric Cards -->
+        <h:form id="kpiForm">
+            <div class="kpi-container">
+                <div class="kpi-card kpi-purple">
+                    <div class="kpi-title">Total Active Members</div>
+                    <div class="kpi-value">#{adminDashboardBean.summary.totalMembers}</div>
+                </div>
+                <div class="kpi-card kpi-green">
+                    <div class="kpi-title">Net Liquidity (Pool)</div>
+                    <div class="kpi-value">
+                        <h:outputText value="#{adminDashboardBean.summary.netGroupLiquidity}">
                             <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
                         </h:outputText>
-                    </p:column>
-
-                    <p:column headerText="Total Repayable (10%)">
-                        <h:outputText value="#{loan.totalAmount}">
+                    </div>
+                </div>
+                <div class="kpi-card kpi-orange">
+                    <div class="kpi-title">Pending Loan Applications</div>
+                    <div class="kpi-value">#{adminDashboardBean.summary.pendingLoansCount}</div>
+                </div>
+                <div class="kpi-card kpi-green">
+                    <div class="kpi-title">Total Cumulative Deposits</div>
+                    <div class="kpi-value">
+                        <h:outputText value="#{adminDashboardBean.summary.totalSystemDeposits}">
                             <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
                         </h:outputText>
-                    </p:column>
-
-                    <p:column headerText="Application Date">
-                        <h:outputText value="#{loan.appliedAt}">
-                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" type="localDateTime" />
+                    </div>
+                </div>
+                <div class="kpi-card kpi-red">
+                    <div class="kpi-title">Total Disbursed Loans</div>
+                    <div class="kpi-value">
+                        <h:outputText value="#{adminDashboardBean.summary.totalDisbursedLoans}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
                         </h:outputText>
-                    </p:column>
+                    </div>
+                </div>
+            </div>
+        </h:form>
 
-                    <p:column headerText="Rejection Reason (If rejecting)" style="width: 250px;">
-                        <p:inputText value="#{adminLoanBean.rejectionReason}" placeholder="Reason for rejection..." style="width: 100%;" />
-                    </p:column>
+        <!-- Pending Loan Approval Actions Table -->
+        <h:form id="pendingLoansForm">
+            <p:panel header="Pending Loan Applications Requiring Approval" style="margin-bottom: 30px;">
+                <p:dataTable var="loan" value="#{adminDashboardBean.pendingLoans}" rows="5" paginator="true" emptyMessage="No pending loan applications requiring review.">
 
-                    <p:column headerText="Actions" style="width: 200px; text-align: center;">
-                        <p:commandButton value="Approve" action="#{adminLoanBean.handleApprove(loan.id)}" update=":msg :pendingForm :allLoansForm" icon="pi pi-check" styleClass="ui-button-success ui-button-sm" style="margin-right: 5px;" />
-                        <p:commandButton value="Reject" action="#{adminLoanBean.handleReject(loan.id)}" update=":msg :pendingForm :allLoansForm" icon="pi pi-times" styleClass="ui-button-danger ui-button-sm" />
-                    </p:column>
-                </p:dataTable>
-            </h:form>
-        </p:panel>
-
-        <!-- System All Loans Audit Trail -->
-        <p:panel header="System-Wide Loan Audit Trail">
-            <h:form id="allLoansForm">
-                <p:dataTable var="loan" value="#{adminLoanBean.allLoans}" rows="10" paginator="true" emptyMessage="No loan records found in system.">
                     <p:column headerText="Loan ID" style="width: 80px; text-align: center;">
                         <h:outputText value="##{loan.id}" />
                     </p:column>
                     <p:column headerText="Member ID" style="width: 100px; text-align: center;">
-                        <h:outputText value="#{loan.memberId}" />
+                        <h:outputText value="User ##{loan.memberId}" />
                     </p:column>
-                    <p:column headerText="Principal">
+                    <p:column headerText="Requested Amount">
                         <h:outputText value="#{loan.principalAmount}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Interest (10%)">
+                        <h:outputText value="#{loan.interestAmount}">
                             <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
                         </h:outputText>
                     </p:column>
@@ -87,22 +103,36 @@
                             <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
                         </h:outputText>
                     </p:column>
-                    <p:column headerText="Amount Paid">
-                        <h:outputText value="#{loan.amountPaid}">
-                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                    <p:column headerText="Applied Date">
+                        <h:outputText value="#{loan.appliedAt}">
+                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" type="localDateTime" />
                         </h:outputText>
                     </p:column>
-                    <p:column headerText="Status" style="text-align: center;">
-                        <span style="padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; background-color: #{loan.status == 'APPROVED' ? '#2ecc71' : (loan.status == 'PENDING' ? '#f39c12' : (loan.status == 'PAID' ? '#3498db' : '#e74c3c'))};">
-                            <h:outputText value="#{loan.status}" />
-                        </span>
-                    </p:column>
-                    <p:column headerText="Rejection Reason">
-                        <h:outputText value="#{loan.rejectionReason != null ? loan.rejectionReason : 'N/A'}" />
+                    <p:column headerText="Actions" style="text-align: center; width: 220px;">
+                        <p:commandButton value="Approve" action="#{adminDashboardBean.approveLoan(loan.id)}" update=":msg :kpiForm :pendingLoansForm" icon="pi pi-check-circle" styleClass="ui-button-success ui-button-sm" style="margin-right: 5px;" />
+                        <p:commandButton value="Reject" icon="pi pi-times-circle" styleClass="ui-button-danger ui-button-sm"
+                                         onclick="PF('rejectDialog').show();" type="button">
+                            <f:setPropertyActionListener value="#{loan.id}" target="#{adminDashboardBean.selectedLoanId}" />
+                        </p:commandButton>
                     </p:column>
                 </p:dataTable>
-            </h:form>
-        </p:panel>
+            </p:panel>
+        </h:form>
+
+        <!-- Rejection Reason Modal -->
+        <h:form id="rejectModalForm">
+            <p:dialog header="Reject Loan Application" widgetVar="rejectDialog" modal="true" responsive="true" width="450">
+                <div style="padding: 10px 0;">
+                    <p:outputLabel for="reasonInput" value="State Rejection Reason:" style="font-weight: bold; margin-bottom: 5px; display: block;" />
+                    <p:inputTextarea id="reasonInput" value="#{adminDashboardBean.rejectionReason}" rows="4" style="width: 100%;" required="true" placeholder="Provide reason for audit logging..." />
+                </div>
+                <f:facet name="footer">
+                    <p:commandButton value="Confirm Rejection" action="#{adminDashboardBean.rejectLoan}" update=":msg :kpiForm :pendingLoansForm" onclick="PF('rejectDialog').hide();" styleClass="ui-button-danger" />
+                    <p:commandButton value="Cancel" onclick="PF('rejectDialog').hide();" type="button" styleClass="ui-button-secondary" />
+                </f:facet>
+            </p:dialog>
+        </h:form>
+
     </div>
 </h:body>
 </html>
