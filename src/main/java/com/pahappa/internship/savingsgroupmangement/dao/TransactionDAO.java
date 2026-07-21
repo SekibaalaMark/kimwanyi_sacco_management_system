@@ -64,4 +64,12 @@ public class TransactionDAO {
         Double balance = calculateTotalBalance(userId);
         return BigDecimal.valueOf(balance);
     }
+
+
+    /**
+     * Alias for findTransactionsByUser to support statement generation.
+     */
+    public List<Transaction> getTransactionsByMemberId(Long memberId) {
+        return findTransactionsByUser(memberId);
+    }
 }
