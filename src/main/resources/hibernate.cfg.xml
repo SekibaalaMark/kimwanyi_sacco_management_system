@@ -23,6 +23,7 @@
         <!-- List entity classes here as you build them -->
         <mapping class="com.pahappa.internship.savingsgroupmangement.model.User"/>
         <mapping class="com.pahappa.internship.savingsgroupmangement.model.Transaction"/>
+        <mapping class="com.pahappa.internship.savingsgroupmangement.model.Loan"/>
 
     </session-factory>
 </hibernate-configuration>
