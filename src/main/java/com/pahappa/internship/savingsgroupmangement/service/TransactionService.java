@@ -22,8 +22,9 @@ public class TransactionService {
 
         // Rule check for Withdrawals
         if (type == TransactionType.WITHDRAWAL) {
+            Double MINIMUM_WITHDRAWABLE = 20000.0;
             Double currentBalance = transactionDAO.calculateTotalBalance(user.getId());
-            if (amount > currentBalance) {
+            if (amount > (currentBalance-MINIMUM_WITHDRAWABLE)) {
                 throw new Exception("Transaction failed: Insufficient account funds. Current balance: " + currentBalance);
             }
         }
