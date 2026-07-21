@@ -72,4 +72,36 @@ public class TransactionDAO {
     public List<Transaction> getTransactionsByMemberId(Long memberId) {
         return findTransactionsByUser(memberId);
     }
+
+
+
+    /**
+     * Retrieves all recorded transactions across all users for system audit logs.
+     */
+    public List<Transaction> findAll() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM Transaction t ORDER BY t.createdAt DESC", Transaction.class)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Computes total aggregate amount for a specific TransactionType (DEPOSIT or WITHDRAWAL).
+     */
+    public BigDecimal getTotalByTransactionType(com.pahappa.internship.savingsgroupmangement.model.TransactionType type) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT SUM(t.amount) FROM Transaction t WHERE t.type = :type";
+            Double total = session.createQuery(hql, Double.class)
+                    .setParameter("type", type)
+                    .uniqueResult();
+
+            return total != null ? BigDecimal.valueOf(total) : BigDecimal.ZERO;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return BigDecimal.ZERO;
+        }
+    }
 }
