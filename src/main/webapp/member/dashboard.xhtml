@@ -37,7 +37,7 @@
                     <h:panelGrid columns="1" style="width: 100%;">
                         <p:outputLabel for="depAmount" value="Enter Deposit Amount (UGX):" />
                         <p:inputNumber id="depAmount" value="#{transactionBean.amount}" symbol="UGX " decimalPlaces="0" min="1" style="width: 100%;" required="true"/>
-                        <p:commandButton value="Deposit Funds" action="#{transactionBean.deposit}" update="msg ledgerForm balanceDisplay depositForm" icon="pi pi-plus-circle" styleClass="ui-button-success" style="margin-top: 15px; width: 100%;" />
+                        <p:commandButton value="Deposit Funds" action="#{transactionBean.deposit}" update=":msg :ledgerForm :balanceDisplay depositForm" icon="pi pi-plus-circle" styleClass="ui-button-success" style="margin-top: 15px; width: 100%;" />
                     </h:panelGrid>
                 </h:form>
             </p:panel>
@@ -47,22 +47,98 @@
                     <h:panelGrid columns="1" style="width: 100%;">
                         <p:outputLabel for="witAmount" value="Enter Withdrawal Amount (UGX):" />
                         <p:inputNumber id="witAmount" value="#{transactionBean.amount}" symbol="UGX " decimalPlaces="0" min="1" style="width: 100%;" required="true"/>
-                        <p:commandButton value="Withdraw Funds" action="#{transactionBean.withdraw}" update="msg ledgerForm balanceDisplay withdrawForm" icon="pi pi-minus-circle" styleClass="ui-button-warning" style="margin-top: 15px; width: 100%;" />
+                        <p:commandButton value="Withdraw Funds" action="#{transactionBean.withdraw}" update=":msg :ledgerForm :balanceDisplay withdrawForm" icon="pi pi-minus-circle" styleClass="ui-button-warning" style="margin-top: 15px; width: 100%;" />
                     </h:panelGrid>
                 </h:form>
             </p:panel>
         </div>
 
-        <!-- The Audit Trail Ledger Data Table -->
+        <!-- Loan Management Section -->
+        <p:panel header="Loan Management Center" style="margin-bottom: 30px;">
+            <div style="display: flex; gap: 20px;">
+                <!-- Apply for Loan -->
+                <p:panel header="Apply for a Loan" style="flex: 1;">
+                    <h:form id="loanApplyForm">
+                        <h:panelGrid columns="1" style="width: 100%;">
+                            <p:outputLabel for="appAmount" value="Requested Loan Amount (UGX):" />
+                            <p:inputNumber id="appAmount" value="#{loanBean.applyAmount}" symbol="UGX " decimalPlaces="0" min="1000" style="width: 100%;" required="true"/>
+                            <p:staticMessage severity="info" summary="Note:" detail="Max Loan = 3x Savings Balance. 10% flat interest apply." style="margin-top: 10px; width:100%;"/>
+                            <p:commandButton value="Submit Application" action="#{loanBean.handleApply}" update=":msg :memberLoansForm loanApplyForm" icon="pi pi-send" styleClass="ui-button-primary" style="margin-top: 15px; width: 100%;" />
+                        </h:panelGrid>
+                    </h:form>
+                </p:panel>
+
+                <!-- Repay Loan -->
+                <p:panel header="Repay Active Loan" style="flex: 1;">
+                    <h:form id="loanRepayForm">
+                        <h:panelGrid columns="1" style="width: 100%;">
+                            <p:outputLabel for="selectLoan" value="Select Approved Loan:" />
+                            <p:selectOneMenu id="selectLoan" value="#{loanBean.selectedLoanId}" style="width: 100%;" required="true">
+                                <f:selectItem itemLabel="-- Choose Loan --" itemValue="" />
+                                <f:selectItems value="#{loanBean.memberLoans}" var="l"
+                                               itemLabel="ID ##{l.id} - Bal: UGX #{l.remainingBalance} (#{l.status})"
+                                               itemValue="#{l.id}" />
+                            </p:selectOneMenu>
+
+                            <p:outputLabel for="repayAmount" value="Repayment Amount (UGX):" style="margin-top: 10px; display: block;"/>
+                            <p:inputNumber id="repayAmount" value="#{loanBean.repayAmount}" symbol="UGX " decimalPlaces="0" min="1" style="width: 100%;" required="true"/>
+
+                            <p:commandButton value="Make Payment" action="#{loanBean.handleRepay}" update=":msg :memberLoansForm loanRepayForm" icon="pi pi-dollar" styleClass="ui-button-success" style="margin-top: 15px; width: 100%;" />
+                        </h:panelGrid>
+                    </h:form>
+                </p:panel>
+            </div>
+
+            <!-- Member Loan History Table -->
+            <h:form id="memberLoansForm" style="margin-top: 20px;">
+                <p:dataTable var="loan" value="#{loanBean.memberLoans}" rows="5" paginator="true" emptyMessage="No loan history recorded.">
+                    <f:facet name="header">My Loan History</f:facet>
+
+                    <p:column headerText="Loan ID" style="text-align: center; width: 80px;">
+                        <h:outputText value="##{loan.id}" />
+                    </p:column>
+                    <p:column headerText="Principal">
+                        <h:outputText value="#{loan.principalAmount}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Interest (10%)">
+                        <h:outputText value="#{loan.interestAmount}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Total Owed">
+                        <h:outputText value="#{loan.totalAmount}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Amount Paid">
+                        <h:outputText value="#{loan.amountPaid}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Remaining Balance">
+                        <h:outputText value="#{loan.remainingBalance}" style="font-weight: bold; color: #c0392b;">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Status" style="text-align: center;">
+                        <span style="padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; background-color: #{loan.status == 'APPROVED' ? '#2ecc71' : (loan.status == 'PENDING' ? '#f39c12' : (loan.status == 'PAID' ? '#3498db' : '#e74c3c'))};">
+                            <h:outputText value="#{loan.status}" />
+                        </span>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </p:panel>
+
+        <!-- Audit Trail Ledger Data Table -->
         <h:form id="ledgerForm">
             <p:dataTable var="tx" value="#{transactionBean.transactionHistory}" rows="10" paginator="true"
                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                          rowsPerPageTemplate="5,10,20" emptyMessage="No transactions recorded for this account yet.">
 
-                <f:facet name="header">
-                    Account Transaction Ledger Audit
-                </f:facet>
+                <f:facet name="header">Account Transaction Ledger Audit</f:facet>
 
                 <p:column headerText="Transaction ID" style="text-align: center; width: 120px;">
                     <h:outputText value="#{tx.id}" />
