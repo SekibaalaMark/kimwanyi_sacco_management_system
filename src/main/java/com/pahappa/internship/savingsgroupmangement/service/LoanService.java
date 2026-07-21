@@ -2,7 +2,7 @@ package com.pahappa.internship.savingsgroupmangement.service;
 
 import com.pahappa.internship.savingsgroupmangement.dao.LoanDAO;
 import com.pahappa.internship.savingsgroupmangement.dao.TransactionDAO;
-import com.pahappa.internship.savingsgroupmangement.dao.UserDAO; // Added to fetch User entity
+import com.pahappa.internship.savingsgroupmangement.dao.UserDAO;
 import com.pahappa.internship.savingsgroupmangement.model.Loan;
 import com.pahappa.internship.savingsgroupmangement.model.LoanStatus;
 import com.pahappa.internship.savingsgroupmangement.model.Transaction;
@@ -20,6 +20,7 @@ import java.util.List;
 public class LoanService {
 
     public static final BigDecimal INTEREST_RATE = new BigDecimal("0.10"); // 10% flat interest rate
+    public static final BigDecimal MINIMUM_ACCOUNT_BALANCE = new BigDecimal("20000"); // UGX 20,000 minimum balance floor
 
     @Inject
     private LoanDAO loanDAO;
@@ -28,7 +29,7 @@ public class LoanService {
     private TransactionDAO transactionDAO;
 
     @Inject
-    private UserDAO userDAO; // Injected to retrieve the borrower user entity
+    private UserDAO userDAO;
 
     /**
      * Apply for a new loan
@@ -117,7 +118,9 @@ public class LoanService {
     }
 
     /**
-     * Repay an active loan
+     * Repay an active loan.
+     * Decrements the member's account balance by recording a WITHDRAWAL transaction,
+     * while enforcing that the user's balance does not drop below UGX 20,000.
      */
     public void repayLoan(Long loanId, BigDecimal paymentAmount) {
         if (paymentAmount == null || paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -130,17 +133,53 @@ public class LoanService {
             throw new IllegalStateException("Only active APPROVED loans can be repaid.");
         }
 
-        BigDecimal remainingBalance = loan.getRemainingBalance();
-        if (paymentAmount.compareTo(remainingBalance) > 0) {
+        // 1. Validate payment against remaining loan balance
+        BigDecimal remainingLoanBalance = loan.getRemainingBalance();
+        if (paymentAmount.compareTo(remainingLoanBalance) > 0) {
             throw new IllegalArgumentException(
-                    String.format("Payment exceeds loan balance. Outstanding balance is UGX %,.2f.", remainingBalance)
+                    String.format("Payment exceeds outstanding loan balance. Current balance is UGX %,.2f.", remainingLoanBalance)
             );
         }
 
+        // 2. Check current savings account balance and verify the UGX 20,000 threshold
+        BigDecimal currentAccountBalance = transactionDAO.getMemberBalance(loan.getMemberId());
+        BigDecimal projectedAccountBalance = currentAccountBalance.subtract(paymentAmount);
+
+        if (projectedAccountBalance.compareTo(MINIMUM_ACCOUNT_BALANCE) < 0) {
+            BigDecimal maxPermissibleRepayment = currentAccountBalance.subtract(MINIMUM_ACCOUNT_BALANCE);
+
+            if (maxPermissibleRepayment.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalStateException(
+                        String.format("Repayment failed. Your account balance (UGX %,.2f) is already at or below the minimum required balance of UGX %,.2f.",
+                                currentAccountBalance, MINIMUM_ACCOUNT_BALANCE)
+                );
+            } else {
+                throw new IllegalStateException(
+                        String.format("Repayment failed. Your account balance cannot fall below UGX %,.2f. The maximum you can pay right now is UGX %,.2f.",
+                                MINIMUM_ACCOUNT_BALANCE, maxPermissibleRepayment)
+                );
+            }
+        }
+
+        // 3. Fetch borrower entity for ledger transaction recording
+        User borrower = userDAO.findById(loan.getMemberId());
+        if (borrower == null) {
+            throw new IllegalStateException("Borrower user record not found.");
+        }
+
+        // 4. Record a WITHDRAWAL transaction to decrement the member's account balance
+        Transaction repaymentTransaction = new Transaction();
+        repaymentTransaction.setUser(borrower);
+        repaymentTransaction.setType(TransactionType.WITHDRAWAL);
+        repaymentTransaction.setAmount(paymentAmount.doubleValue());
+
+        transactionDAO.saveTransaction(repaymentTransaction);
+
+        // 5. Update loan state
         BigDecimal newAmountPaid = loan.getAmountPaid().add(paymentAmount);
         loan.setAmountPaid(newAmountPaid);
 
-        // Mark fully paid if remaining balance hits zero
+        // Mark as PAID when total loan amount is fully satisfied
         if (newAmountPaid.compareTo(loan.getTotalAmount()) >= 0) {
             loan.setStatus(LoanStatus.PAID);
         }
