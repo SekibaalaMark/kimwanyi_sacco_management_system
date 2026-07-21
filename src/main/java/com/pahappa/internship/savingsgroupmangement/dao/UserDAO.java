@@ -1,14 +1,13 @@
 package com.pahappa.internship.savingsgroupmangement.dao;
 
-
-
-
 import com.pahappa.internship.savingsgroupmangement.config.HibernateUtil;
 import com.pahappa.internship.savingsgroupmangement.model.User;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+@ApplicationScoped
 public class UserDAO {
 
     public void saveUser(User user) {
@@ -18,10 +17,24 @@ public class UserDAO {
             session.persist(user);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            throw e; // Pass it up to our business tier to handle messages gracefully
+            throw e;
+        }
+    }
+
+    /**
+     * Finds a User by primary key ID.
+     * Required by LoanService when disbursing approved loan funds.
+     */
+    public User findById(Long id) {
+        if (id == null) return null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.get(User.class, id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

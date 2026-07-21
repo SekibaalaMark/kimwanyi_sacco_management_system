@@ -6,7 +6,7 @@
     <session-factory>
         <!-- Database Connection Settings -->
         <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/savings_group?useSSL=false&amp;serverTimezone=UTC</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/savings_group?useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true</property>
         <property name="hibernate.connection.username">root</property>
         <property name="hibernate.connection.password">cit2026</property>
 
@@ -22,6 +22,8 @@
 
         <!-- List entity classes here as you build them -->
         <mapping class="com.pahappa.internship.savingsgroupmangement.model.User"/>
+        <mapping class="com.pahappa.internship.savingsgroupmangement.model.Transaction"/>
+        <mapping class="com.pahappa.internship.savingsgroupmangement.model.Loan"/>
 
     </session-factory>
 </hibernate-configuration>
