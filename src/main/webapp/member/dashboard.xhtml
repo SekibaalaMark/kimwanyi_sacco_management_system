@@ -51,6 +51,34 @@
                     </h:panelGrid>
                 </h:form>
             </p:panel>
+
+            <p:panel header="Send Money to a Member" style="flex: 1;">
+                <h:form id="transferForm">
+                    <h:panelGrid columns="1" style="width: 100%;">
+                        <p:outputLabel for="recipientNationalId" value="Recipient National ID:" />
+                        <p:inputText id="recipientNationalId" value="#{transactionBean.recipientNationalId}"
+                                     maxlength="30" style="width: 100%;" required="true"
+                                     requiredMessage="Recipient National ID is required." />
+                        <p:commandButton value="Verify Recipient" action="#{transactionBean.verifyRecipient}"
+                                         process="@this recipientNationalId" update=":msg @form"
+                                         icon="pi pi-user" styleClass="ui-button-secondary" />
+                        <h:panelGroup id="recipientConfirmation" layout="block">
+                            <h:panelGroup rendered="#{not empty transactionBean.verifiedRecipient}" layout="block"
+                                          style="padding: .75rem; background: #e8f5e9; border-radius: 4px; color: #1b5e20;">
+                                <strong>Confirm recipient: </strong>
+                                <h:outputText value="#{transactionBean.verifiedRecipient.username} (#{transactionBean.verifiedRecipient.nationalId})" />
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <p:outputLabel for="transferAmount" value="Amount to Send (UGX):" />
+                        <p:inputNumber id="transferAmount" value="#{transactionBean.transferAmount}" symbol="UGX "
+                                       decimalPlaces="0" min="1" style="width: 100%;" required="true" />
+                        <p:commandButton value="Send Money" action="#{transactionBean.transfer}"
+                                         update=":msg :ledgerForm :balanceDisplay transferForm" icon="pi pi-send"
+                                         disabled="#{empty transactionBean.verifiedRecipient}"
+                                         styleClass="ui-button-primary" style="margin-top: 15px; width: 100%;" />
+                    </h:panelGrid>
+                </h:form>
+            </p:panel>
         </div>
 
         <!-- Loan Management Section -->
@@ -161,6 +189,10 @@
                         <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
                     </h:outputText>
                 </p:column>
+
+                <p:column headerText="Description">
+                    <h:outputText value="#{tx.description}" />
+                </p:column>
             </p:dataTable>
         </h:form>
 
@@ -223,6 +255,9 @@
                             <h:outputText value="#{tx.amount}">
                                 <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
                             </h:outputText>
+                        </p:column>
+                        <p:column headerText="Description">
+                            <h:outputText value="#{tx.description}" />
                         </p:column>
                     </p:dataTable>
                 </div>
