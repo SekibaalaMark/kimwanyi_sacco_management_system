@@ -3,7 +3,9 @@ package com.pahappa.internship.savingsgroupmangement.service;
 
 import com.pahappa.internship.savingsgroupmangement.dao.UserDAO;
 import com.pahappa.internship.savingsgroupmangement.model.User;
+import jakarta.enterprise.context.ApplicationScoped;
 
+@ApplicationScoped
 public class UserService {
 
     private final UserDAO userDAO = new UserDAO();

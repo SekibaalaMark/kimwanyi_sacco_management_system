@@ -133,6 +133,50 @@
             </p:dialog>
         </h:form>
 
+        <!-- Member Management Section -->
+        <h:form id="memberManagementForm">
+            <p:panel header="Registered Members Management" style="margin-top: 30px;">
+                <p:dataTable var="member" value="#{adminDashboardBean.members}" rows="10" paginator="true"
+                             emptyMessage="No registered members found.">
+
+                    <p:column headerText="ID" style="width: 70px; text-align: center;">
+                        <h:outputText value="##{member.id}" />
+                    </p:column>
+
+                    <p:column headerText="Username">
+                        <h:outputText value="#{member.username}" />
+                    </p:column>
+
+                    <p:column headerText="National ID">
+                        <h:outputText value="#{member.nationalId}" />
+                    </p:column>
+
+                    <p:column headerText="Status" style="width: 120px; text-align: center;">
+                        <p:tag value="#{member.active ? 'ACTIVE' : 'DEACTIVATED'}"
+                               severity="#{member.active ? 'success' : 'danger'}" />
+                    </p:column>
+
+                    <p:column headerText="Actions" style="text-align: center; width: 180px;">
+                        <p:commandButton value="#{member.active ? 'Deactivate' : 'Activate'}"
+                                         action="#{adminDashboardBean.toggleUserStatus(member)}"
+                                         update=":msg :memberManagementForm :kpiForm"
+                                         icon="#{member.active ? 'pi pi-user-minus' : 'pi pi-user-plus'}"
+                                         styleClass="#{member.active ? 'ui-button-warning ui-button-sm' : 'ui-button-success ui-button-sm'}">
+                            <p:confirm header="Confirm Action"
+                                       message="Are you sure you want to #{member.active ? 'deactivate' : 'activate'} #{member.username}?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <!-- Global Confirmation Modal -->
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                <p:commandButton value="Cancel" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                <p:commandButton value="Proceed" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" />
+            </p:confirmDialog>
+        </h:form>
+
     </div>
 </h:body>
 </html>
