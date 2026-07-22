@@ -37,3 +37,8 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# Local environment files may contain database credentials or API keys.
+.env
+.env.*
+!.env.example
