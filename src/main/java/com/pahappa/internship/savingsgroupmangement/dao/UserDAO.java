@@ -14,24 +14,28 @@ import java.util.List;
 @ApplicationScoped
 public class UserDAO {
 
-    public void saveUser(User user) {
+    public void saveUser(User user) throws Exception {
+        Session session = null;
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
             transaction = session.beginTransaction();
             session.persist(user);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null && transaction.isActive()) {
+            if (transaction != null) {
                 transaction.rollback();
             }
-            throw e;
+
+            throw new Exception("Failed to save user: " + e.getMessage(), e);
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 
-    /**
-     * Finds a User by primary key ID.
-     * Required by LoanService when disbursing approved loan funds.
-     */
+
     public User findById(Long id) {
         if (id == null) return null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -58,9 +62,7 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Counts all non-admin registered member accounts in the system.
-     */
+
     public long countAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "SELECT COUNT(u) FROM User u WHERE u.role = :role";
@@ -74,9 +76,7 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Retrieves all registered members (excluding ADMIN accounts) for management tables.
-     */
+
     public List<User> findAllMembers() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "FROM User u WHERE u.role = :role ORDER BY u.createdAt DESC";
@@ -89,9 +89,7 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Toggles or updates the active status of a user (Deactivate / Activate).
-     */
+
     public void updateStatus(Long userId, boolean active) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

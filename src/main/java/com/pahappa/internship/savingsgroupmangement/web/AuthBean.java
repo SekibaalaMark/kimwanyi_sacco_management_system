@@ -25,10 +25,10 @@ public class AuthBean implements Serializable {
 
     public String login() {
         try {
-            // Authenticate user against DB
+
             User authenticatedUser = userService.authenticate(username, password);
 
-            // Rule Check: Block login for deactivated accounts
+
             if (!authenticatedUser.isActive()) {
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_ERROR, "Access Denied",
@@ -38,10 +38,10 @@ public class AuthBean implements Serializable {
 
             this.currentUser = authenticatedUser;
 
-            // Clean up credentials from bean memory immediately after auth
+
             this.password = null;
 
-            // Route user based on their specific role profile
+
             if (currentUser.getRole() == Role.ADMIN) {
                 return "/admin/dashboard.xhtml?faces-redirect=true";
             } else {
@@ -55,7 +55,7 @@ public class AuthBean implements Serializable {
     }
 
     public String logout() {
-        // Explicitly invalidate the container HTTP Session
+
         FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
         return "/index.xhtml?faces-redirect=true";
     }
@@ -68,7 +68,7 @@ public class AuthBean implements Serializable {
         return currentUser != null && currentUser.getRole() == Role.ADMIN;
     }
 
-    // --- Getters and Setters ---
+
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 

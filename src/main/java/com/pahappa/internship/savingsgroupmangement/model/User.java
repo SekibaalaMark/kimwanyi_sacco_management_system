@@ -13,7 +13,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // RULE: Each member must have a unique National ID / membership number
+
     @Column(name = "national_id", unique = true, nullable = false, length = 30)
     private String nationalId;
 
@@ -27,9 +27,9 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role = Role.MEMBER;
 
-    // RULE: Accounts can be deactivated (Active vs Inactive) instead of deleted
+
     @Column(nullable = false)
-    private boolean active = true;
+    private boolean active = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -48,7 +48,6 @@ public class User {
         return BCrypt.checkpw(plainTextPassword, this.password);
     }
 
-    // --- Getters and Setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

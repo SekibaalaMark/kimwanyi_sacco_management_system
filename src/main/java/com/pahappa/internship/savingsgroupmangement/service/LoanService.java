@@ -122,13 +122,16 @@ public class LoanService {
      * Decrements the member's account balance by recording a WITHDRAWAL transaction,
      * while enforcing that the user's balance does not drop below UGX 20,000.
      */
-    public void repayLoan(Long loanId, BigDecimal paymentAmount) {
+    public void repayLoan(Long memberId, Long loanId, BigDecimal paymentAmount) {
         if (paymentAmount == null || paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Repayment amount must be greater than zero.");
         }
 
         Loan loan = loanDAO.findById(loanId);
         if (loan == null) throw new IllegalArgumentException("Loan record not found.");
+        if (!loan.getMemberId().equals(memberId)) {
+            throw new IllegalStateException("You can only repay your own loan.");
+        }
         if (loan.getStatus() != LoanStatus.APPROVED) {
             throw new IllegalStateException("Only active APPROVED loans can be repaid.");
         }
@@ -172,6 +175,7 @@ public class LoanService {
         repaymentTransaction.setUser(borrower);
         repaymentTransaction.setType(TransactionType.WITHDRAWAL);
         repaymentTransaction.setAmount(paymentAmount.doubleValue());
+        repaymentTransaction.setDescription("Loan repayment for loan #" + loan.getId());
 
         transactionDAO.saveTransaction(repaymentTransaction);
 

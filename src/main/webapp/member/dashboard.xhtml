@@ -111,7 +111,7 @@
                             <p:outputLabel for="repayAmount" value="Repayment Amount (UGX):" style="margin-top: 10px; display: block;"/>
                             <p:inputNumber id="repayAmount" value="#{loanBean.repayAmount}" symbol="UGX " decimalPlaces="0" min="1" style="width: 100%;" required="true"/>
 
-                            <p:commandButton value="Make Payment" action="#{loanBean.handleRepay}" update=":msg :memberLoansForm loanRepayForm" icon="pi pi-dollar" styleClass="ui-button-success" style="margin-top: 15px; width: 100%;" />
+                            <p:commandButton value="Make Payment" action="#{loanBean.handleRepay}" update=":msg :memberLoansForm :ledgerForm :balanceDisplay loanRepayForm" icon="pi pi-dollar" styleClass="ui-button-success" style="margin-top: 15px; width: 100%;" />
                         </h:panelGrid>
                     </h:form>
                 </p:panel>
