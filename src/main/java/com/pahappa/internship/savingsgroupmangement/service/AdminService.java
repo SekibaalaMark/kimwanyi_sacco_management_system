@@ -7,6 +7,7 @@ import com.pahappa.internship.savingsgroupmangement.dto.AdminSummaryDTO;
 import com.pahappa.internship.savingsgroupmangement.model.Loan;
 import com.pahappa.internship.savingsgroupmangement.model.LoanStatus;
 import com.pahappa.internship.savingsgroupmangement.model.TransactionType;
+import com.pahappa.internship.savingsgroupmangement.model.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -58,5 +59,13 @@ public class AdminService {
                 totalDisbursed,
                 netLiquidity
         );
+    }
+
+    public List<User> getAllMembers() {
+        return userDAO.findAllMembers();
+    }
+
+    public void toggleUserActiveStatus(Long userId, boolean newStatus) {
+        userDAO.updateStatus(userId, newStatus);
     }
 }
