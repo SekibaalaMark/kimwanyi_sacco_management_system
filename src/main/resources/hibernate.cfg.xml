@@ -6,9 +6,7 @@
     <session-factory>
         <!-- Database Connection Settings -->
         <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/savings_group?useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true</property>
-        <property name="hibernate.connection.username">root</property>
-        <property name="hibernate.connection.password">cit2026</property>
+        <!-- DB_URL, DB_USERNAME and DB_PASSWORD are read from environment variables. -->
 
         <!-- SQL Dialect for MySQL -->
         <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
