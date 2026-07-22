@@ -17,16 +17,15 @@
                 <div style="text-align: center; margin-bottom: 1rem;">Savings Group Login</div>
             </f:facet>
 
-            <p:messages id="messages" showDetail="true" closable="true">
-                <p:autoUpdate />
-            </p:messages>
+            <!-- Global Error / Info Messages -->
+            <p:messages id="messages" showDetail="true" closable="true" />
 
             <div class="ui-fluid">
                 <!-- Username -->
                 <div class="field" style="margin-bottom: 1.5rem;">
                     <p:outputLabel for="username" value="Username" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
                     <p:inputText id="username" value="#{authBean.username}" required="true"
-                                 requiredMessage="Please enter your username." icon="pi pi-user"/>
+                                 requiredMessage="Please enter your username." />
                 </div>
 
                 <!-- Password -->
@@ -37,9 +36,9 @@
                 </div>
             </div>
 
-            <!-- Login Action Button -->
+            <!-- Login Action Button (Non-AJAX for clean redirect) -->
             <p:commandButton value="Sign In" action="#{authBean.login}"
-                             update="loginForm" icon="pi pi-sign-in" styleClass="ui-button-primary" />
+                             ajax="false" icon="pi pi-sign-in" styleClass="ui-button-primary" />
 
             <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9em;">
                 New to the group? <p:link href="register.xhtml" value="Register here as a member"/>
