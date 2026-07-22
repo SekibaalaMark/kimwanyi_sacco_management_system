@@ -24,6 +24,9 @@ public class TransactionBean implements Serializable {
     private AuthBean authBean; // Grabs the active logged-in user session
 
     private Double amount;
+    private Double transferAmount;
+    private String recipientNationalId;
+    private User verifiedRecipient;
     private Double currentBalance;
     private List<Transaction> transactionHistory;
 
@@ -48,6 +51,40 @@ public class TransactionBean implements Serializable {
         handleTransaction(TransactionType.WITHDRAWAL, "Withdrawal of UGX" + amount + " successful!");
     }
 
+    public void transfer() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        try {
+            if (verifiedRecipient == null || !verifiedRecipient.getNationalId().equals(recipientNationalId == null ? null : recipientNationalId.trim())) {
+                throw new Exception("Please verify the recipient before confirming this transfer.");
+            }
+            User recipient = transactionService.transfer(authBean.getCurrentUser(), recipientNationalId, transferAmount);
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Transfer successful",
+                    "UGX " + transferAmount + " sent to " + recipient.getUsername() + "."));
+            transferAmount = null;
+            recipientNationalId = null;
+            verifiedRecipient = null;
+            refreshLedger();
+        } catch (Exception e) {
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Transfer Error", e.getMessage()));
+        }
+    }
+
+    public void verifyRecipient() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        verifiedRecipient = null;
+        try {
+            User recipient = transactionService.findTransferRecipient(recipientNationalId);
+            if (authBean.getCurrentUser().getId().equals(recipient.getId())) {
+                throw new Exception("You cannot send money to your own account.");
+            }
+            verifiedRecipient = recipient;
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Recipient confirmed",
+                    "You are sending money to " + recipient.getUsername() + "."));
+        } catch (Exception e) {
+            context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Recipient Error", e.getMessage()));
+        }
+    }
+
     private void handleTransaction(TransactionType type, String successMessage) {
         FacesContext context = FacesContext.getCurrentInstance();
         try {
@@ -66,6 +103,14 @@ public class TransactionBean implements Serializable {
     // --- Getters and Setters ---
     public Double getAmount() { return amount; }
     public void setAmount(Double amount) { this.amount = amount; }
+
+    public Double getTransferAmount() { return transferAmount; }
+    public void setTransferAmount(Double transferAmount) { this.transferAmount = transferAmount; }
+
+    public String getRecipientNationalId() { return recipientNationalId; }
+    public void setRecipientNationalId(String recipientNationalId) { this.recipientNationalId = recipientNationalId; }
+
+    public User getVerifiedRecipient() { return verifiedRecipient; }
 
     public Double getCurrentBalance() { return currentBalance; }
     public List<Transaction> getTransactionHistory() { return transactionHistory; }
