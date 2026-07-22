@@ -2,6 +2,7 @@ package com.pahappa.internship.savingsgroupmangement.web;
 
 import com.pahappa.internship.savingsgroupmangement.dto.AdminSummaryDTO;
 import com.pahappa.internship.savingsgroupmangement.model.Loan;
+import com.pahappa.internship.savingsgroupmangement.model.User;
 import com.pahappa.internship.savingsgroupmangement.service.AdminService;
 import com.pahappa.internship.savingsgroupmangement.service.LoanService;
 import jakarta.annotation.PostConstruct;
@@ -26,6 +27,7 @@ public class AdminDashboardBean implements Serializable {
 
     private AdminSummaryDTO summary;
     private List<Loan> pendingLoans;
+    private List<User> members; // Added to hold member list
     private Long selectedLoanId;
     private String rejectionReason;
 
@@ -37,6 +39,7 @@ public class AdminDashboardBean implements Serializable {
     public void refreshDashboard() {
         this.summary = adminService.getDashboardSummary();
         this.pendingLoans = loanService.getPendingLoans();
+        this.members = adminService.getAllMembers(); // Fetch all member accounts
     }
 
     public void approveLoan(Long loanId) {
@@ -64,11 +67,41 @@ public class AdminDashboardBean implements Serializable {
         }
     }
 
+    /**
+     * Toggles the active status of a member account (Activate / Deactivate).
+     */
+    public void toggleUserStatus(User member) {
+        if (member == null || member.getId() == null) {
+            return;
+        }
+
+        try {
+            boolean newStatus = !member.isActive();
+            adminService.toggleUserActiveStatus(member.getId(), newStatus);
+
+            String action = newStatus ? "activated" : "deactivated";
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "User Updated",
+                            "Account for " + member.getUsername() + " has been " + action + "."));
+
+            refreshDashboard();
+        } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Status Update Failed", e.getMessage()));
+        }
+    }
+
     // Getters and Setters
     public AdminSummaryDTO getSummary() { return summary; }
+
     public List<Loan> getPendingLoans() { return pendingLoans; }
+
+    public List<User> getMembers() { return members; }
+
     public Long getSelectedLoanId() { return selectedLoanId; }
     public void setSelectedLoanId(Long selectedLoanId) { this.selectedLoanId = selectedLoanId; }
+
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
 }
