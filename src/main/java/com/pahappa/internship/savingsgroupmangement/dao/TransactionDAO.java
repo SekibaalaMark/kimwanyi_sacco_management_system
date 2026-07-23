@@ -28,10 +28,7 @@ public class TransactionDAO {
         }
     }
 
-    /**
-     * Moves funds between two member ledgers as one database transaction.  The debit and
-     * credit are both persisted, or neither is persisted if validation or saving fails.
-     */
+
     public User transfer(Long senderId, String recipientNationalId, Double amount) throws Exception {
         org.hibernate.Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -98,9 +95,7 @@ public class TransactionDAO {
         }
     }
 
-    /**
-     * Calculates the user's total savings balance directly from deposit/withdrawal history.
-     */
+
     public Double calculateTotalBalance(Long userId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "SELECT SUM(CASE WHEN t.type = com.pahappa.internship.savingsgroupmangement.model.TransactionType.DEPOSIT THEN t.amount ELSE -t.amount END) " +
@@ -117,28 +112,19 @@ public class TransactionDAO {
         }
     }
 
-    /**
-     * Helper method to return balance as a BigDecimal for accurate calculations
-     * in business logic (e.g., loan 3x multiplier check).
-     */
+
     public BigDecimal getMemberBalance(Long userId) {
         Double balance = calculateTotalBalance(userId);
         return BigDecimal.valueOf(balance);
     }
 
 
-    /**
-     * Alias for findTransactionsByUser to support statement generation.
-     */
     public List<Transaction> getTransactionsByMemberId(Long memberId) {
         return findTransactionsByUser(memberId);
     }
 
 
 
-    /**
-     * Retrieves all recorded transactions across all users for system audit logs.
-     */
     public List<Transaction> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM Transaction t ORDER BY t.createdAt DESC", Transaction.class)
@@ -149,9 +135,7 @@ public class TransactionDAO {
         }
     }
 
-    /**
-     * Computes total aggregate amount for a specific TransactionType (DEPOSIT or WITHDRAWAL).
-     */
+
     public BigDecimal getTotalByTransactionType(com.pahappa.internship.savingsgroupmangement.model.TransactionType type) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "SELECT SUM(t.amount) FROM Transaction t WHERE t.type = :type";
