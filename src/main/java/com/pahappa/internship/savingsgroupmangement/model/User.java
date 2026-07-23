@@ -20,6 +20,15 @@ public class User {
     @Column(unique = true, nullable = false, length = 50)
     private String username;
 
+    @Column(name = "full_name", length = 100)
+    private String fullName;
+
+    @Column(length = 30)
+    private String phoneNumber;
+
+    @Column(length = 120)
+    private String email;
+
     @Column(nullable = false)
     private String password;
 
@@ -60,6 +69,15 @@ public class User {
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
 
 
