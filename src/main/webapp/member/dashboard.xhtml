@@ -13,28 +13,31 @@
 <h:body>
     <p:growl id="msg" showDetail="true" life="4000" />
 
-    <div style="padding: 20px; max-width: 1200px; margin: 0 auto;">
+    <div class="dashboard-shell">
         <!-- Top Title Bar -->
         <h:form id="headerForm">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ccc; padding-bottom: 10px;">
-                <h2>Welcome back, #{authBean.currentUser.username}!</h2>
+            <div class="dashboard-header">
+                <div>
+                    <h1>Welcome back, #{authBean.currentUser.username}</h1>
+                    <span class="dashboard-subtitle">Manage your savings, transfers and loan activity.</span>
+                </div>
                 <p:commandButton value="Logout" action="#{authBean.logout}" icon="pi pi-sign-out" styleClass="ui-button-danger" />
             </div>
         </h:form>
 
         <!-- Balance Metrics Summary Board -->
-        <h:panelGroup id="balanceDisplay" layout="block" style="margin: 20px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
-            <h3>Account Net Balance</h3>
-            <h:outputText value="#{transactionBean.currentBalance}" style="font-size: 2.5em; font-weight: bold; color: #2c3e50;">
+        <h:panelGroup id="balanceDisplay" layout="block" styleClass="balance-hero">
+            <span class="balance-label">Available savings balance</span>
+            <h:outputText value="#{transactionBean.currentBalance}" styleClass="balance-value">
                 <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
             </h:outputText>
         </h:panelGroup>
 
         <!-- Financial Operations Matrix -->
-        <div style="display: flex; gap: 20px; margin-bottom: 30px;">
-            <p:panel header="Make a Deposit" style="flex: 1;">
+        <div class="action-grid">
+            <p:panel header="Make a deposit">
                 <h:form id="depositForm">
-                    <h:panelGrid columns="1" style="width: 100%;">
+                    <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
                         <p:outputLabel for="depAmount" value="Enter Deposit Amount (UGX):" />
                         <p:inputNumber id="depAmount" value="#{transactionBean.amount}" symbol="UGX " decimalPlaces="0" min="1" style="width: 100%;" required="true"/>
                         <p:commandButton value="Deposit Funds" action="#{transactionBean.deposit}" update=":msg :ledgerForm :balanceDisplay depositForm" icon="pi pi-plus-circle" styleClass="ui-button-success" style="margin-top: 15px; width: 100%;" />
@@ -42,9 +45,9 @@
                 </h:form>
             </p:panel>
 
-            <p:panel header="Request a Withdrawal" style="flex: 1;">
+            <p:panel header="Request a withdrawal">
                 <h:form id="withdrawForm">
-                    <h:panelGrid columns="1" style="width: 100%;">
+                    <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
                         <p:outputLabel for="witAmount" value="Enter Withdrawal Amount (UGX):" />
                         <p:inputNumber id="witAmount" value="#{transactionBean.amount}" symbol="UGX " decimalPlaces="0" min="1" style="width: 100%;" required="true"/>
                         <p:commandButton value="Withdraw Funds" action="#{transactionBean.withdraw}" update=":msg :ledgerForm :balanceDisplay withdrawForm" icon="pi pi-minus-circle" styleClass="ui-button-warning" style="margin-top: 15px; width: 100%;" />
@@ -52,9 +55,9 @@
                 </h:form>
             </p:panel>
 
-            <p:panel header="Send Money to a Member" style="flex: 1;">
+            <p:panel header="Send money to a member">
                 <h:form id="transferForm">
-                    <h:panelGrid columns="1" style="width: 100%;">
+                    <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
                         <p:outputLabel for="recipientNationalId" value="Recipient National ID:" />
                         <p:inputText id="recipientNationalId" value="#{transactionBean.recipientNationalId}"
                                      maxlength="30" style="width: 100%;" required="true"
@@ -64,7 +67,7 @@
                                          icon="pi pi-user" styleClass="ui-button-secondary" />
                         <h:panelGroup id="recipientConfirmation" layout="block">
                             <h:panelGroup rendered="#{not empty transactionBean.verifiedRecipient}" layout="block"
-                                          style="padding: .75rem; background: #e8f5e9; border-radius: 4px; color: #1b5e20;">
+                                          styleClass="recipient-confirmation">
                                 <strong>Confirm recipient: </strong>
                                 <h:outputText value="#{transactionBean.verifiedRecipient.username} (#{transactionBean.verifiedRecipient.nationalId})" />
                             </h:panelGroup>
@@ -82,12 +85,12 @@
         </div>
 
         <!-- Loan Management Section -->
-        <p:panel header="Loan Management Center" style="margin-bottom: 30px;">
-            <div style="display: flex; gap: 20px;">
+        <p:panel header="Loan management">
+            <div class="loan-grid">
                 <!-- Apply for Loan -->
-                <p:panel header="Apply for a Loan" style="flex: 1;">
+                <p:panel header="Apply for a loan">
                     <h:form id="loanApplyForm">
-                        <h:panelGrid columns="1" style="width: 100%;">
+                        <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
                             <p:outputLabel for="appAmount" value="Requested Loan Amount (UGX):" />
                             <p:inputNumber id="appAmount" value="#{loanBean.applyAmount}" symbol="UGX " decimalPlaces="0" min="1000" style="width: 100%;" required="true"/>
                             <p:staticMessage severity="info" summary="Note:" detail="Max Loan = 3x Savings Balance. 10% flat interest apply." style="margin-top: 10px; width:100%;"/>
@@ -97,9 +100,9 @@
                 </p:panel>
 
                 <!-- Repay Loan -->
-                <p:panel header="Repay Active Loan" style="flex: 1;">
+                <p:panel header="Repay an active loan">
                     <h:form id="loanRepayForm">
-                        <h:panelGrid columns="1" style="width: 100%;">
+                        <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
                             <p:outputLabel for="selectLoan" value="Select Approved Loan:" />
                             <p:selectOneMenu id="selectLoan" value="#{loanBean.selectedLoanId}" style="width: 100%;" required="true">
                                 <f:selectItem itemLabel="-- Choose Loan --" itemValue="" />
@@ -146,12 +149,12 @@
                         </h:outputText>
                     </p:column>
                     <p:column headerText="Remaining Balance">
-                        <h:outputText value="#{loan.remainingBalance}" style="font-weight: bold; color: #c0392b;">
+                        <h:outputText value="#{loan.remainingBalance}" styleClass="amount-negative">
                             <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
                         </h:outputText>
                     </p:column>
                     <p:column headerText="Status" style="text-align: center;">
-                        <span style="padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; background-color: #{loan.status == 'APPROVED' ? '#2ecc71' : (loan.status == 'PENDING' ? '#f39c12' : (loan.status == 'PAID' ? '#3498db' : '#e74c3c'))};">
+                        <span class="status-pill" style="background-color: #{loan.status == 'APPROVED' ? '#1f7a4d' : (loan.status == 'PENDING' ? '#b86912' : (loan.status == 'PAID' ? '#547866' : '#b84040'))};">
                             <h:outputText value="#{loan.status}" />
                         </span>
                     </p:column>
@@ -179,13 +182,13 @@
                 </p:column>
 
                 <p:column headerText="Type" style="text-align: center; width: 150px;">
-                    <span style="padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; background-color: #{tx.type == 'DEPOSIT' ? '#2ecc71' : '#e74c3c'};">
+                    <span class="status-pill" style="background-color: #{tx.type == 'DEPOSIT' ? '#1f7a4d' : '#b84040'};">
                         <h:outputText value="#{tx.type}" />
                     </span>
                 </p:column>
 
                 <p:column headerText="Amount" style="text-align: right;">
-                    <h:outputText value="#{tx.amount}" style="font-weight: bold; color: #{tx.type == 'DEPOSIT' ? '#27ae60' : '#c0392b'};">
+                    <h:outputText value="#{tx.amount}" style="font-weight: bold; color: #{tx.type == 'DEPOSIT' ? '#1f7a4d' : '#b84040'};">
                         <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
                     </h:outputText>
                 </p:column>
@@ -198,8 +201,8 @@
 
         <!-- Statement Action Bar & Dialog (WRAPPED IN H:FORM TO FIX UIForm WARNING) -->
         <h:form id="statementForm">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 10px;">
-                <h3>Account Transaction Ledger Audit</h3>
+            <div class="section-heading">
+                <h3>Download your statement</h3>
                 <p:commandButton value="Generate Account Statement"
                                  icon="pi pi-file-pdf"
                                  type="button"

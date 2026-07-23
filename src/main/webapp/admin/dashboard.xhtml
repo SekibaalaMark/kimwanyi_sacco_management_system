@@ -8,32 +8,22 @@
 <h:head>
     <title>Admin Operations Center - Secure Ledger</title>
     <h:outputStylesheet name="css/layout.css" />
-    <style>
-        .kpi-container { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; }
-        .kpi-card { flex: 1; min-width: 220px; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 5px solid #2980b9; }
-        .kpi-title { font-size: 0.85em; color: #7f8c8d; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
-        .kpi-value { font-size: 1.8em; font-weight: bold; color: #2c3e50; }
-        .kpi-green { border-left-color: #2ecc71; }
-        .kpi-orange { border-left-color: #f39c12; }
-        .kpi-red { border-left-color: #e74c3c; }
-        .kpi-purple { border-left-color: #9b59b6; }
-    </style>
 </h:head>
 
 <h:body>
     <p:growl id="msg" showDetail="true" life="4000" />
 
-    <div style="padding: 20px; max-width: 1300px; margin: 0 auto;">
+    <div class="dashboard-shell">
 
         <!-- Header -->
         <h:form id="adminHeaderForm">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ccc; padding-bottom: 12px; margin-bottom: 25px;">
+            <div class="dashboard-header">
                 <div>
-                    <h2 style="margin: 0; color: #2c3e50;">Admin Operations Dashboard</h2>
-                    <span style="color: #7f8c8d;">Group Financial Summary &amp; Decision Hub</span>
+                    <h1>Admin Operations Dashboard</h1>
+                    <span class="dashboard-subtitle">Kimwanyi SACCO Summary</span>
                 </div>
-                <div>
-                    <p:commandButton value="Refresh Analytics" action="#{adminDashboardBean.refreshDashboard}" update=":kpiForm :pendingLoansForm" icon="pi pi-refresh" styleClass="ui-button-outlined ui-button-secondary" style="margin-right: 10px;" />
+                <div class="header-actions">
+                    <p:commandButton value="Refresh" action="#{adminDashboardBean.refreshDashboard}" update=":kpiForm :pendingLoansForm" icon="pi pi-refresh" styleClass="ui-button-outlined ui-button-secondary" />
                     <p:commandButton value="Logout" action="#{authBean.logout}" icon="pi pi-sign-out" styleClass="ui-button-danger" />
                 </div>
             </div>
@@ -79,7 +69,7 @@
 
         <!-- Pending Loan Approval Actions Table -->
         <h:form id="pendingLoansForm">
-            <p:panel header="Pending Loan Applications Requiring Approval" style="margin-bottom: 30px;">
+            <p:panel header="Loan applications awaiting review">
                 <p:dataTable var="loan" value="#{adminDashboardBean.pendingLoans}" rows="5" paginator="true" emptyMessage="No pending loan applications requiring review.">
 
                     <p:column headerText="Loan ID" style="width: 80px; text-align: center;">
@@ -111,7 +101,7 @@
                     <p:column headerText="Actions" style="text-align: center; width: 220px;">
                         <p:commandButton value="Approve" action="#{adminDashboardBean.approveLoan(loan.id)}" update=":msg :kpiForm :pendingLoansForm" icon="pi pi-check-circle" styleClass="ui-button-success ui-button-sm" style="margin-right: 5px;" />
                         <p:commandButton value="Reject" icon="pi pi-times-circle" styleClass="ui-button-danger ui-button-sm"
-                                         onclick="PF('rejectDialog').show();" type="button">
+                                         process="@this" update=":rejectModalForm" oncomplete="PF('rejectDialog').show();">
                             <f:setPropertyActionListener value="#{loan.id}" target="#{adminDashboardBean.selectedLoanId}" />
                         </p:commandButton>
                     </p:column>
@@ -127,7 +117,7 @@
                     <p:inputTextarea id="reasonInput" value="#{adminDashboardBean.rejectionReason}" rows="4" style="width: 100%;" required="true" placeholder="Provide reason for audit logging..." />
                 </div>
                 <f:facet name="footer">
-                    <p:commandButton value="Confirm Rejection" action="#{adminDashboardBean.rejectLoan}" update=":msg :kpiForm :pendingLoansForm" onclick="PF('rejectDialog').hide();" styleClass="ui-button-danger" />
+                    <p:commandButton value="Confirm Rejection" action="#{adminDashboardBean.rejectLoan}" update=":msg :kpiForm :pendingLoansForm" oncomplete="if (!args.validationFailed) PF('rejectDialog').hide();" styleClass="ui-button-danger" />
                     <p:commandButton value="Cancel" onclick="PF('rejectDialog').hide();" type="button" styleClass="ui-button-secondary" />
                 </f:facet>
             </p:dialog>
@@ -135,7 +125,7 @@
 
         <!-- Member Management Section -->
         <h:form id="memberManagementForm">
-            <p:panel header="Registered Members Management" style="margin-top: 30px;">
+            <p:panel header="Registered members">
                 <p:dataTable var="member" value="#{adminDashboardBean.members}" rows="10" paginator="true"
                              emptyMessage="No registered members found.">
 
