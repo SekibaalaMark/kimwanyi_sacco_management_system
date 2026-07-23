@@ -15,6 +15,19 @@ public class UserService {
     private UserDAO userDAO;
 
     public void registerMember(User user) throws Exception {
+        if (user == null) {
+            throw new IllegalArgumentException("Registration details are required.");
+        }
+        requireText(user.getFullName(), "Full name");
+        requireText(user.getPhoneNumber(), "Phone number");
+        requireText(user.getEmail(), "Email address");
+        if (!user.getEmail().trim().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new IllegalArgumentException("Enter a valid email address.");
+        }
+
+        user.setFullName(user.getFullName().trim());
+        user.setPhoneNumber(user.getPhoneNumber().trim());
+        user.setEmail(user.getEmail().trim().toLowerCase());
         user.setRole(Role.MEMBER);
         // New members require administrator approval before they can log in.
         user.setActive(false);
@@ -27,6 +40,12 @@ public class UserService {
             } else if (e.getMessage().contains("username")) {
                 throw new Exception("Username already exists");
             }
+        }
+    }
+
+    private void requireText(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
         }
     }
 
