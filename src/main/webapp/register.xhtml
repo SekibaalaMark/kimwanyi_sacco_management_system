@@ -41,12 +41,48 @@
                     </p:inputText>
                 </div>
 
+                <div class="field style-margin" style="margin-bottom: 1.5rem;">
+                    <p:outputLabel for="fullName" value="Full Name" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
+                    <p:inputText id="fullName" value="#{registerBean.user.fullName}" required="true"
+                                 requiredMessage="Full name is required." placeholder="Enter your full name">
+                        <f:validateLength minimum="2" maximum="100"/>
+                    </p:inputText>
+                </div>
+
+                <div class="field style-margin" style="margin-bottom: 1.5rem;">
+                    <p:outputLabel for="phoneNumber" value="Phone Number" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
+                    <p:inputText id="phoneNumber" value="#{registerBean.user.phoneNumber}" required="true"
+                                 requiredMessage="Phone number is required." placeholder="e.g. +256 700 000 000">
+                        <f:validateLength minimum="7" maximum="30"/>
+                    </p:inputText>
+                </div>
+
+                <div class="field style-margin" style="margin-bottom: 1.5rem;">
+                    <p:outputLabel for="email" value="Email Address" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
+                    <p:inputText id="email" value="#{registerBean.user.email}" required="true"
+                                 requiredMessage="Email address is required." placeholder="you@example.com">
+                        <f:validateRegex pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"/>
+                    </p:inputText>
+                </div>
+
                 <!-- Password Input -->
-                <div class="field style-margin" style="margin-bottom: 2rem;">
+                <div class="field style-margin" style="margin-bottom: 1.5rem;">
                     <p:outputLabel for="password" value="Password" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
                     <p:password id="password" value="#{registerBean.user.password}" required="true"
                                 requiredMessage="Password is required." feedback="true" inline="true"
                                 placeholder="Secure password" toggleMask="true"/>
+                </div>
+
+                <div class="field style-margin" style="margin-bottom: 1.5rem;">
+                    <p:outputLabel for="confirmPassword" value="Re-enter Password" style="font-weight:bold; display:block; margin-bottom: .5rem;"/>
+                    <p:password id="confirmPassword" value="#{registerBean.confirmPassword}" required="true"
+                                requiredMessage="Please re-enter your password." placeholder="Re-enter your password" toggleMask="true"/>
+                </div>
+
+                <div class="field style-margin" style="margin-bottom: 2rem;">
+                    <p:selectBooleanCheckbox id="terms" value="#{registerBean.termsAccepted}" required="true"
+                                             requiredMessage="You must accept the Terms and Conditions to register." />
+                    <p:outputLabel for="terms" value=" I agree to the Terms and Conditions" style="margin-left: .5rem;"/>
                 </div>
             </div>
 
