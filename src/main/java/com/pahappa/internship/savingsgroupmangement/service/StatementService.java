@@ -23,24 +23,23 @@ public class StatementService {
 
     public StatementDTO generateStatementForMember(Long memberId) {
 
-        // Find the member
+
         User member = userDAO.findById(memberId);
 
         if (member == null) {
             throw new IllegalArgumentException("Member not found.");
         }
 
-        // Get all transactions
         List<Transaction> history = transactionDAO.getTransactionsByMemberId(memberId);
 
-        // Get current balance
+
         BigDecimal currentBalance = transactionDAO.getMemberBalance(memberId);
 
-        // Initialize totals
+
         BigDecimal totalDeposits = BigDecimal.ZERO;
         BigDecimal totalWithdrawals = BigDecimal.ZERO;
 
-        // Loop through transactions
+
         for (Transaction transaction : history) {
 
             BigDecimal amount = BigDecimal.valueOf(transaction.getAmount());
@@ -54,7 +53,7 @@ public class StatementService {
             }
         }
 
-        // Return statement
+
         return new StatementDTO(
                 member,
                 currentBalance,

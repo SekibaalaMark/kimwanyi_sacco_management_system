@@ -31,20 +31,18 @@ public class LoanService {
     @Inject
     private UserDAO userDAO;
 
-    /**
-     * Apply for a new loan
-     */
+
     public void applyForLoan(Long memberId, BigDecimal requestedAmount) {
         if (requestedAmount == null || requestedAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Requested loan amount must be greater than zero.");
         }
 
-        // Rule 1: A member may only hold one active or pending loan at a time
+
         if (loanDAO.hasActiveOrPendingLoan(memberId)) {
             throw new IllegalStateException("You already have an active or pending loan application. Please settle it first.");
         }
 
-        // Rule 2: Maximum loan amount is 3x current savings balance
+
         BigDecimal savingsBalance = transactionDAO.getMemberBalance(memberId);
         BigDecimal maxLoanAllowed = savingsBalance.multiply(new BigDecimal("3")).setScale(2, RoundingMode.HALF_UP);
 
@@ -55,7 +53,7 @@ public class LoanService {
             );
         }
 
-        // Calculate 10% flat rate interest
+
         BigDecimal interestAmount = requestedAmount.multiply(INTEREST_RATE).setScale(2, RoundingMode.HALF_UP);
         BigDecimal totalAmount = requestedAmount.add(interestAmount);
 
@@ -71,10 +69,6 @@ public class LoanService {
         loanDAO.save(loan);
     }
 
-    /**
-     * Approve a pending loan (Admin action)
-     * Automatically credits (DEPOSIT) the principal amount to the member's account balance.
-     */
     public void approveLoan(Long loanId) {
         Loan loan = loanDAO.findById(loanId);
         if (loan == null) throw new IllegalArgumentException("Loan record not found.");
@@ -82,18 +76,18 @@ public class LoanService {
             throw new IllegalStateException("Only PENDING loans can be approved.");
         }
 
-        // 1. Fetch the member/user entity
+
         User borrower = userDAO.findById(loan.getMemberId());
         if (borrower == null) {
             throw new IllegalStateException("Borrower user record not found.");
         }
 
-        // 2. Mark the loan as APPROVED
+
         loan.setStatus(LoanStatus.APPROVED);
         loan.setApprovedAt(LocalDateTime.now());
         loanDAO.update(loan);
 
-        // 3. Automatically top up member's account balance by creating a DEPOSIT transaction
+
         Transaction loanDisbursement = new Transaction();
         loanDisbursement.setUser(borrower);
         loanDisbursement.setType(TransactionType.DEPOSIT);
@@ -102,9 +96,7 @@ public class LoanService {
         transactionDAO.saveTransaction(loanDisbursement);
     }
 
-    /**
-     * Reject a pending loan (Admin action)
-     */
+
     public void rejectLoan(Long loanId, String reason) {
         Loan loan = loanDAO.findById(loanId);
         if (loan == null) throw new IllegalArgumentException("Loan record not found.");
@@ -117,11 +109,7 @@ public class LoanService {
         loanDAO.update(loan);
     }
 
-    /**
-     * Repay an active loan.
-     * Decrements the member's account balance by recording a WITHDRAWAL transaction,
-     * while enforcing that the user's balance does not drop below UGX 20,000.
-     */
+
     public void repayLoan(Long memberId, Long loanId, BigDecimal paymentAmount) {
         if (paymentAmount == null || paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Repayment amount must be greater than zero.");
@@ -136,7 +124,7 @@ public class LoanService {
             throw new IllegalStateException("Only active APPROVED loans can be repaid.");
         }
 
-        // 1. Validate payment against remaining loan balance
+
         BigDecimal remainingLoanBalance = loan.getRemainingBalance();
         if (paymentAmount.compareTo(remainingLoanBalance) > 0) {
             throw new IllegalArgumentException(
@@ -144,7 +132,7 @@ public class LoanService {
             );
         }
 
-        // 2. Check current savings account balance and verify the UGX 20,000 threshold
+
         BigDecimal currentAccountBalance = transactionDAO.getMemberBalance(loan.getMemberId());
         BigDecimal projectedAccountBalance = currentAccountBalance.subtract(paymentAmount);
 
@@ -164,13 +152,13 @@ public class LoanService {
             }
         }
 
-        // 3. Fetch borrower entity for ledger transaction recording
+
         User borrower = userDAO.findById(loan.getMemberId());
         if (borrower == null) {
             throw new IllegalStateException("Borrower user record not found.");
         }
 
-        // 4. Record a WITHDRAWAL transaction to decrement the member's account balance
+
         Transaction repaymentTransaction = new Transaction();
         repaymentTransaction.setUser(borrower);
         repaymentTransaction.setType(TransactionType.WITHDRAWAL);
@@ -179,11 +167,10 @@ public class LoanService {
 
         transactionDAO.saveTransaction(repaymentTransaction);
 
-        // 5. Update loan state
         BigDecimal newAmountPaid = loan.getAmountPaid().add(paymentAmount);
         loan.setAmountPaid(newAmountPaid);
 
-        // Mark as PAID when total loan amount is fully satisfied
+
         if (newAmountPaid.compareTo(loan.getTotalAmount()) >= 0) {
             loan.setStatus(LoanStatus.PAID);
         }
