@@ -14,6 +14,8 @@ import jakarta.inject.Named;
 public class RegisterBean {
 
     private User user;
+    private String confirmPassword;
+    private boolean termsAccepted;
 
     @Inject
     private  UserService userService;
@@ -25,6 +27,12 @@ public class RegisterBean {
 
     public String register() {
         try {
+            if (!termsAccepted) {
+                throw new IllegalArgumentException("You must accept the Terms and Conditions to register.");
+            }
+            if (user.getPassword() == null || !user.getPassword().equals(confirmPassword)) {
+                throw new IllegalArgumentException("Passwords do not match.");
+            }
             userService.registerMember(user);
 
 
@@ -33,6 +41,8 @@ public class RegisterBean {
                             "Your account is awaiting administrator activation. You will be able to log in once it is activated."));
 
             user = new User();
+            confirmPassword = null;
+            termsAccepted = false;
             return null;
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
@@ -44,4 +54,10 @@ public class RegisterBean {
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+
+    public String getConfirmPassword() { return confirmPassword; }
+    public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
+
+    public boolean isTermsAccepted() { return termsAccepted; }
+    public void setTermsAccepted(boolean termsAccepted) { this.termsAccepted = termsAccepted; }
 }
