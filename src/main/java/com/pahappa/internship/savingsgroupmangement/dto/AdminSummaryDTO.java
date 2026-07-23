@@ -23,7 +23,7 @@ public class AdminSummaryDTO {
         this.netGroupLiquidity = netGroupLiquidity;
     }
 
-    // Getters
+
     public long getTotalMembers() { return totalMembers; }
     public long getActiveLoansCount() { return activeLoansCount; }
     public long getPendingLoansCount() { return pendingLoansCount; }

@@ -27,7 +27,7 @@ public class AdminDashboardBean implements Serializable {
 
     private AdminSummaryDTO summary;
     private List<Loan> pendingLoans;
-    private List<User> members; // Added to hold member list
+    private List<User> members;
     private Long selectedLoanId;
     private String rejectionReason;
 
@@ -39,7 +39,7 @@ public class AdminDashboardBean implements Serializable {
     public void refreshDashboard() {
         this.summary = adminService.getDashboardSummary();
         this.pendingLoans = loanService.getPendingLoans();
-        this.members = adminService.getAllMembers(); // Fetch all member accounts
+        this.members = adminService.getAllMembers();
     }
 
     public void approveLoan(Long loanId) {
@@ -67,9 +67,7 @@ public class AdminDashboardBean implements Serializable {
         }
     }
 
-    /**
-     * Toggles the active status of a member account (Activate / Deactivate).
-     */
+
     public void toggleUserStatus(User member) {
         if (member == null || member.getId() == null) {
             return;
@@ -92,7 +90,7 @@ public class AdminDashboardBean implements Serializable {
         }
     }
 
-    // Getters and Setters
+
     public AdminSummaryDTO getSummary() { return summary; }
 
     public List<Loan> getPendingLoans() { return pendingLoans; }
