@@ -78,8 +78,52 @@ body {
 .amount-positive { color: var(--green-700); font-weight: 700; }.amount-negative { color: var(--danger); font-weight: 700; }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 28px 0 10px; color: var(--green-900); }
 
+/* Keep a long statement inside the viewport; the dialog footer (with Print) stays reachable. */
+.ui-dialog.statement-dialog { max-width: calc(100vw - 2rem); }
+.ui-dialog.statement-dialog .ui-dialog-content {
+    max-height: calc(100vh - 11rem);
+    overflow-y: auto;
+}
+
+@page { size: A4 portrait; margin: 12mm; }
+
+/* Print only the statement content, without the dashboard or dialog controls. */
+@media print {
+    html, body { background: #fff !important; height: auto !important; }
+    body * { visibility: hidden !important; }
+    #printArea, #printArea * { visibility: visible !important; }
+    .ui-dialog.statement-dialog,
+    .ui-dialog.statement-dialog .ui-dialog-content,
+    #printArea .ui-datatable,
+    #printArea .ui-datatable-wrapper {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    #printArea {
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        padding: 0 !important;
+        color: #17221c;
+        font-size: 10pt;
+    }
+    #printArea .ui-datatable { border: 1px solid #b9c7bd; }
+    #printArea .ui-datatable table { width: 100% !important; border-collapse: collapse; }
+    #printArea .ui-datatable thead { display: table-header-group; }
+    #printArea .ui-datatable th {
+        background: #e7f4eb !important;
+        color: #123d2a !important;
+        font-size: 8pt;
+        padding: 7px 5px;
+    }
+    #printArea .ui-datatable td { padding: 6px 5px; font-size: 8.5pt; }
+    #printArea .ui-datatable tr { break-inside: avoid; page-break-inside: avoid; }
+}
+
 @media (max-width: 820px) {
     .dashboard-shell { padding: 18px 14px 30px; }
     .dashboard-header { align-items: flex-start; flex-direction: column; }
     .action-grid, .loan-grid { grid-template-columns: 1fr; }
+    .ui-dialog.statement-dialog .ui-dialog-content { max-height: calc(100vh - 9rem); }
 }
