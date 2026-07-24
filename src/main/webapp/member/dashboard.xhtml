@@ -211,7 +211,8 @@
             </div>
 
             <!-- Statement Print/PDF Dialog -->
-            <p:dialog header="Official Account Statement" widgetVar="statementDialog" modal="true" width="800" responsive="true">
+            <p:dialog header="Official Account Statement" widgetVar="statementDialog" modal="true" width="800"
+                      responsive="true" fitViewport="true" styleClass="statement-dialog">
                 <div id="printArea" style="padding: 20px; font-family: Arial, sans-serif;">
                     <!-- Header -->
                     <div style="border-bottom: 2px solid #2c3e50; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between;">
@@ -266,7 +267,8 @@
                 </div>
 
                 <f:facet name="footer">
-                    <p:commandButton value="Print / Save as PDF" icon="pi pi-print" onclick="window.print();" styleClass="ui-button-success" />
+                    <p:commandButton value="Print / Save as PDF" icon="pi pi-print" type="button"
+                                     onclick="window.print();" styleClass="ui-button-success" />
                     <p:commandButton value="Close" icon="pi pi-times" onclick="PF('statementDialog').hide();" styleClass="ui-button-secondary" />
                 </f:facet>
             </p:dialog>
