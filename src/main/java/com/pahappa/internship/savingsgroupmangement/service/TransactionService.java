@@ -1,34 +1,38 @@
 package com.pahappa.internship.savingsgroupmangement.service;
-
-
-
-
 import com.pahappa.internship.savingsgroupmangement.dao.TransactionDAO;
 import com.pahappa.internship.savingsgroupmangement.dao.UserDAO;
 import com.pahappa.internship.savingsgroupmangement.model.Role;
 import com.pahappa.internship.savingsgroupmangement.model.Transaction;
 import com.pahappa.internship.savingsgroupmangement.model.TransactionType;
 import com.pahappa.internship.savingsgroupmangement.model.User;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import java.util.List;
 
+@ApplicationScoped
 public class TransactionService {
 
-    private final TransactionDAO transactionDAO = new TransactionDAO();
-    private final UserDAO userDAO = new UserDAO();
+    @Inject
+    private TransactionDAO transactionDAO;
+
+    @Inject
+    private UserDAO userDAO;
 
     public void executeTransaction(User user, Double amount, TransactionType type) throws Exception {
-        // Enforce boundary parameters: No negative or empty entries
         if (amount == null || amount <= 0) {
             throw new Exception("Transaction failed: The amount must be greater than zero.");
         }
 
-        // Rule check for Withdrawals
+
         if (type == TransactionType.WITHDRAWAL) {
             Double MINIMUM_WITHDRAWABLE = 20000.0;
             Double currentBalance = transactionDAO.calculateTotalBalance(user.getId());
-            if (amount > (currentBalance-MINIMUM_WITHDRAWABLE)) {
+            if (amount > currentBalance) {
                 throw new Exception("Transaction failed: Insufficient account funds. Current balance: " + currentBalance);
+            }
+            else if (amount > (currentBalance-MINIMUM_WITHDRAWABLE)) {
+                throw new Exception("Transaction failed: Insufficient account funds UGX 20,000 must keep on Account. Current balance: " + currentBalance);
             }
         }
 

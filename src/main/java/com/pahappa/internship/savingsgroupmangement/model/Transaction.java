@@ -12,14 +12,13 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Establishing a clean Foreign Key mapping back to our User table
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private TransactionType type; // DEPOSIT or WITHDRAWAL
+    private TransactionType type;
 
     @Column(nullable = false)
     private Double amount;
@@ -37,7 +36,6 @@ public class Transaction {
         this.createdAt = LocalDateTime.now();
     }
 
-    // --- Getters and Setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

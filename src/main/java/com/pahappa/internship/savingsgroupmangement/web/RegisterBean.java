@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 @Named("registerBean")
@@ -13,7 +14,11 @@ import jakarta.inject.Named;
 public class RegisterBean {
 
     private User user;
-    private final UserService userService = new UserService();
+    private String confirmPassword;
+    private boolean termsAccepted;
+
+    @Inject
+    private  UserService userService;
 
     @PostConstruct
     public void init() {
@@ -22,24 +27,37 @@ public class RegisterBean {
 
     public String register() {
         try {
+            if (!termsAccepted) {
+                throw new IllegalArgumentException("You must accept the Terms and Conditions to register.");
+            }
+            if (user.getPassword() == null || !user.getPassword().equals(confirmPassword)) {
+                throw new IllegalArgumentException("Passwords do not match.");
+            }
             userService.registerMember(user);
 
-            // Show global success message to user
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Registration complete! You can now log in."));
 
-            // Clear out form by creating a fresh object instance
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, "Registration submitted",
+                            "Your account is awaiting administrator activation. You will be able to log in once it is activated."));
+
             user = new User();
-            return null; // Stay on the same page to view message
+            confirmPassword = null;
+            termsAccepted = false;
+            return null;
         } catch (Exception e) {
-            // Intercept validation exceptions (e.g., non-unique National ID) and show cleanly
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Registration Error", e.getMessage()));
             return null;
         }
     }
 
-    // --- Getters and Setters ---
+
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+
+    public String getConfirmPassword() { return confirmPassword; }
+    public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
+
+    public boolean isTermsAccepted() { return termsAccepted; }
+    public void setTermsAccepted(boolean termsAccepted) { this.termsAccepted = termsAccepted; }
 }

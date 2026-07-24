@@ -25,6 +25,9 @@ public class LoanBean implements Serializable {
     @Inject
     private AuthBean authBean;
 
+    @Inject
+    private TransactionBean transactionBean;
+
     private BigDecimal applyAmount;
     private BigDecimal repayAmount;
     private Long selectedLoanId;
@@ -58,11 +61,17 @@ public class LoanBean implements Serializable {
 
     public void handleRepay() {
         try {
+            User currentUser = authBean.getCurrentUser();
+            if (currentUser == null) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Please log in again before making a repayment.");
+                return;
+            }
             if (selectedLoanId == null) {
                 addMessage(FacesMessage.SEVERITY_ERROR, "Error", "No loan selected for repayment.");
                 return;
             }
-            loanService.repayLoan(selectedLoanId, repayAmount);
+            loanService.repayLoan(currentUser.getId(), selectedLoanId, repayAmount);
+            transactionBean.refreshLedger();
             addMessage(FacesMessage.SEVERITY_INFO, "Success", "Loan repayment recorded successfully.");
             repayAmount = null;
             loadData();

@@ -39,7 +39,7 @@ public class AdminService {
                 .filter(l -> l.getStatus() == LoanStatus.PENDING)
                 .count();
 
-        // Calculate direct totals from TransactionDAO
+
         BigDecimal totalDeposits = transactionDAO.getTotalByTransactionType(TransactionType.DEPOSIT);
         BigDecimal totalWithdrawals = transactionDAO.getTotalByTransactionType(TransactionType.WITHDRAWAL);
 

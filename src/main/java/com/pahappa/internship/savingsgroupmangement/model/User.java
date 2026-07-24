@@ -13,12 +13,21 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // RULE: Each member must have a unique National ID / membership number
+
     @Column(name = "national_id", unique = true, nullable = false, length = 30)
     private String nationalId;
 
     @Column(unique = true, nullable = false, length = 50)
     private String username;
+
+    @Column(name = "full_name", length = 100)
+    private String fullName;
+
+    @Column(length = 30)
+    private String phoneNumber;
+
+    @Column(length = 120)
+    private String email;
 
     @Column(nullable = false)
     private String password;
@@ -27,9 +36,9 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role = Role.MEMBER;
 
-    // RULE: Accounts can be deactivated (Active vs Inactive) instead of deleted
+
     @Column(nullable = false)
-    private boolean active = true;
+    private boolean active = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -48,7 +57,6 @@ public class User {
         return BCrypt.checkpw(plainTextPassword, this.password);
     }
 
-    // --- Getters and Setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -61,6 +69,15 @@ public class User {
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
 
 

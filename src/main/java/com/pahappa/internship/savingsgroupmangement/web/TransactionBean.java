@@ -18,10 +18,11 @@ import java.util.List;
 @ViewScoped
 public class TransactionBean implements Serializable {
 
-    private final TransactionService transactionService = new TransactionService();
+    @Inject
+    private TransactionService transactionService;
 
     @Inject
-    private AuthBean authBean; // Grabs the active logged-in user session
+    private AuthBean authBean;
 
     private Double amount;
     private Double transferAmount;
@@ -91,16 +92,15 @@ public class TransactionBean implements Serializable {
             User user = authBean.getCurrentUser();
             transactionService.executeTransaction(user, amount, type);
 
-            // Success routine
+
             context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", successMessage));
-            amount = null; // Clear input field
-            refreshLedger(); // Update calculations on screen
+            amount = null;
+            refreshLedger();
         } catch (Exception e) {
             context.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Transaction Error", e.getMessage()));
         }
     }
 
-    // --- Getters and Setters ---
     public Double getAmount() { return amount; }
     public void setAmount(Double amount) { this.amount = amount; }
 
