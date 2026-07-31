@@ -30,6 +30,7 @@ public class AdminDashboardBean implements Serializable {
     private List<User> members;
     private Long selectedLoanId;
     private String rejectionReason;
+    private String activeSection = "overview";
 
     @PostConstruct
     public void init() {
@@ -40,6 +41,11 @@ public class AdminDashboardBean implements Serializable {
         this.summary = adminService.getDashboardSummary();
         this.pendingLoans = loanService.getPendingLoans();
         this.members = adminService.getAllMembers();
+    }
+
+    public void showSection(String section) {
+        this.activeSection = section;
+        refreshDashboard();
     }
 
     public void approveLoan(Long loanId) {
@@ -102,4 +108,7 @@ public class AdminDashboardBean implements Serializable {
 
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+
+    public String getActiveSection() { return activeSection; }
+    public void setActiveSection(String activeSection) { this.activeSection = activeSection; }
 }
