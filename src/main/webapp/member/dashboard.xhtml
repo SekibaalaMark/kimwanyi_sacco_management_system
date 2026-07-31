@@ -58,26 +58,24 @@
             <p:panel header="Send money to a member">
                 <h:form id="transferForm">
                     <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
-                        <p:outputLabel for="recipientNationalId" value="Recipient National ID:" />
-                        <p:inputText id="recipientNationalId" value="#{transactionBean.recipientNationalId}"
-                                     maxlength="30" style="width: 100%;" required="true"
-                                     requiredMessage="Recipient National ID is required." />
-                        <p:commandButton value="Verify Recipient" action="#{transactionBean.verifyRecipient}"
-                                         process="@this recipientNationalId" update=":msg @form"
-                                         icon="pi pi-user" styleClass="ui-button-secondary" />
-                        <h:panelGroup id="recipientConfirmation" layout="block">
-                            <h:panelGroup rendered="#{not empty transactionBean.verifiedRecipient}" layout="block"
-                                          styleClass="recipient-confirmation">
-                                <strong>Confirm recipient: </strong>
-                                <h:outputText value="#{transactionBean.verifiedRecipient.username} (#{transactionBean.verifiedRecipient.nationalId})" />
-                            </h:panelGroup>
-                        </h:panelGroup>
-                        <p:outputLabel for="transferAmount" value="Amount to Send (UGX):" />
+                        <p:outputLabel for="selectRecipient" value="Select Recipient Member:" />
+                        <p:selectOneMenu id="selectRecipient" value="#{transactionBean.selectedRecipientUsername}"
+                                         style="width: 100%;" required="true" requiredMessage="Please select a recipient member.">
+                            <f:selectItem itemLabel="-- Select Member Username --" itemValue="" />
+                            <f:selectItems value="#{transactionBean.activeRecipients}" var="m"
+                                           itemLabel="#{m.username} (#{m.fullName})"
+                                           itemValue="#{m.username}" />
+                        </p:selectOneMenu>
+
+                        <p:outputLabel for="transferAmount" value="Amount to Send (UGX):" style="margin-top: 10px; display: block;"/>
                         <p:inputNumber id="transferAmount" value="#{transactionBean.transferAmount}" symbol="UGX "
-                                       decimalPlaces="0" min="1" style="width: 100%;" required="true" />
-                        <p:commandButton value="Send Money" action="#{transactionBean.transfer}"
-                                         update=":msg :ledgerForm :balanceDisplay transferForm" icon="pi pi-send"
-                                         disabled="#{empty transactionBean.verifiedRecipient}"
+                                       decimalPlaces="0" min="1" style="width: 100%;" required="true" requiredMessage="Transfer amount is required." />
+
+                        <p:commandButton value="Send Money"
+                                         process="@form"
+                                         update=":msg :confirmTransferForm"
+                                         oncomplete="if (!args.validationFailed) PF('confirmTransferDlg').show();"
+                                         icon="pi pi-send"
                                          styleClass="ui-button-primary" style="margin-top: 15px; width: 100%;" />
                     </h:panelGrid>
                 </h:form>
@@ -270,6 +268,50 @@
                     <p:commandButton value="Print / Save as PDF" icon="pi pi-print" type="button"
                                      onclick="window.print();" styleClass="ui-button-success" />
                     <p:commandButton value="Close" icon="pi pi-times" onclick="PF('statementDialog').hide();" styleClass="ui-button-secondary" />
+                </f:facet>
+            </p:dialog>
+        </h:form>
+
+        <!-- Transfer Confirmation Dialog -->
+        <h:form id="confirmTransferForm">
+            <p:dialog header="Confirm Money Transfer" widgetVar="confirmTransferDlg" modal="true" width="450"
+                      responsive="true" resizable="false">
+                <div style="padding: 10px; text-align: center;">
+                    <i class="pi pi-exclamation-triangle" style="font-size: 3rem; color: #f39c12; margin-bottom: 1rem; display: block;"></i>
+                    <h3 style="margin-top: 0; color: #2c3e50;">Are you sure you want to transfer funds?</h3>
+
+                    <div style="background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin: 15px 0; text-align: left;">
+                        <p style="margin: 5px 0;"><strong>Recipient:</strong> #{transactionBean.selectedRecipientUsername}
+                            <h:panelGroup rendered="#{not empty transactionBean.selectedRecipientUser}">
+                                (#{transactionBean.selectedRecipientUser.fullName})
+                            </h:panelGroup>
+                        </p>
+                        <p style="margin: 5px 0;"><strong>Amount to Send:</strong>
+                            <h:outputText value="#{transactionBean.transferAmount}" style="color: #27ae60; font-weight: bold;">
+                                <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                            </h:outputText>
+                        </p>
+                        <p style="margin: 5px 0;"><strong>Your Available Balance:</strong>
+                            <h:outputText value="#{transactionBean.currentBalance}">
+                                <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                            </h:outputText>
+                        </p>
+                    </div>
+
+                    <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 0;">This transaction cannot be reversed once confirmed.</p>
+                </div>
+
+                <f:facet name="footer">
+                    <div style="display: flex; justify-content: space-between; gap: 10px;">
+                        <p:commandButton value="No, Cancel" icon="pi pi-times"
+                                         onclick="PF('confirmTransferDlg').hide();"
+                                         type="button" styleClass="ui-button-secondary" style="flex: 1;" />
+                        <p:commandButton value="Yes, Confirm &amp; Send" icon="pi pi-check"
+                                         action="#{transactionBean.transfer}"
+                                         update=":msg :ledgerForm :balanceDisplay :transferForm"
+                                         oncomplete="PF('confirmTransferDlg').hide();"
+                                         styleClass="ui-button-success" style="flex: 1;" />
+                    </div>
                 </f:facet>
             </p:dialog>
         </h:form>
