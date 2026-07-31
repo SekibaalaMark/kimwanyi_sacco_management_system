@@ -24,12 +24,13 @@ public class TransactionBean implements Serializable {
     @Inject
     private AuthBean authBean;
 
-    private Double amount;
-    private Double transferAmount;
-    private String selectedRecipientUsername;
-    private List<User> activeRecipients;
-    private Double currentBalance;
+    private Double  amount;
+    private Double  transferAmount;
+    private String  selectedRecipientUsername;
+    private List<User>        activeRecipients;
+    private Double            currentBalance;
     private List<Transaction> transactionHistory;
+    private String            activeSection = "overview";
 
     @PostConstruct
     public void init() {
@@ -39,10 +40,15 @@ public class TransactionBean implements Serializable {
     public void refreshLedger() {
         User user = authBean.getCurrentUser();
         if (user != null) {
-            this.currentBalance = transactionService.getUserBalance(user.getId());
+            this.currentBalance     = transactionService.getUserBalance(user.getId());
             this.transactionHistory = transactionService.getUserTransactionHistory(user.getId());
-            this.activeRecipients = transactionService.getActiveTransferRecipients(user.getId());
+            this.activeRecipients   = transactionService.getActiveTransferRecipients(user.getId());
         }
+    }
+
+    public void showSection(String section) {
+        this.activeSection = section;
+        refreshLedger();
     }
 
     public void deposit() {
@@ -104,8 +110,9 @@ public class TransactionBean implements Serializable {
     public String getSelectedRecipientUsername() { return selectedRecipientUsername; }
     public void setSelectedRecipientUsername(String selectedRecipientUsername) { this.selectedRecipientUsername = selectedRecipientUsername; }
 
-    public List<User> getActiveRecipients() { return activeRecipients; }
-
-    public Double getCurrentBalance() { return currentBalance; }
-    public List<Transaction> getTransactionHistory() { return transactionHistory; }
+    public List<User>        getActiveRecipients()   { return activeRecipients;   }
+    public Double            getCurrentBalance()      { return currentBalance;     }
+    public List<Transaction> getTransactionHistory()  { return transactionHistory; }
+    public String            getActiveSection()       { return activeSection;      }
+    public void              setActiveSection(String s){ this.activeSection = s;   }
 }

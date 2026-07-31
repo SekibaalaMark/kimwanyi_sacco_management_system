@@ -6,315 +6,489 @@
       xmlns:p="http://primefaces.org/ui">
 
 <h:head>
-    <title>Member Dashboard - Secure Ledger</title>
+    <title>Member Dashboard — Kimwanyi SACCO</title>
     <h:outputStylesheet name="css/layout.css" />
 </h:head>
 
 <h:body>
-    <p:growl id="msg" showDetail="true" life="4000" />
+    <p:growl id="msg" showDetail="true" life="5000" sticky="false" />
 
-    <div class="dashboard-shell">
-        <!-- Top Title Bar -->
-        <h:form id="headerForm">
-            <div class="dashboard-header">
-                <div>
-                    <h1>Welcome back, #{authBean.currentUser.username}</h1>
-                    <span class="dashboard-subtitle">Manage your savings, transfers and loan activity.</span>
-                </div>
-                <p:commandButton value="Logout" action="#{authBean.logout}" icon="pi pi-sign-out" styleClass="ui-button-danger" />
-            </div>
-        </h:form>
+    <div class="admin-layout">
 
-        <!-- Balance Metrics Summary Board -->
-        <h:panelGroup id="balanceDisplay" layout="block" styleClass="balance-hero">
-            <span class="balance-label">Available savings balance</span>
-            <h:outputText value="#{transactionBean.currentBalance}" styleClass="balance-value">
-                <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
-            </h:outputText>
-        </h:panelGroup>
-
-        <!-- Financial Operations Matrix -->
-        <div class="action-grid">
-            <p:panel header="Make a deposit">
-                <h:form id="depositForm">
-                    <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
-                        <p:outputLabel for="depAmount" value="Enter Deposit Amount (UGX):" />
-                        <p:inputNumber id="depAmount" value="#{transactionBean.amount}" symbol="UGX " decimalPlaces="0" min="1" style="width: 100%;" required="true"/>
-                        <p:commandButton value="Deposit Funds" action="#{transactionBean.deposit}" update=":msg :ledgerForm :balanceDisplay depositForm" icon="pi pi-plus-circle" styleClass="ui-button-success" style="margin-top: 15px; width: 100%;" />
-                    </h:panelGrid>
-                </h:form>
-            </p:panel>
-
-            <p:panel header="Request a withdrawal">
-                <h:form id="withdrawForm">
-                    <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
-                        <p:outputLabel for="witAmount" value="Enter Withdrawal Amount (UGX):" />
-                        <p:inputNumber id="witAmount" value="#{transactionBean.amount}" symbol="UGX " decimalPlaces="0" min="1" style="width: 100%;" required="true"/>
-                        <p:commandButton value="Withdraw Funds" action="#{transactionBean.withdraw}" update=":msg :ledgerForm :balanceDisplay withdrawForm" icon="pi pi-minus-circle" styleClass="ui-button-warning" style="margin-top: 15px; width: 100%;" />
-                    </h:panelGrid>
-                </h:form>
-            </p:panel>
-
-            <p:panel header="Send money to a member">
-                <h:form id="transferForm">
-                    <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
-                        <p:outputLabel for="selectRecipient" value="Select Recipient Member:" />
-                        <p:selectOneMenu id="selectRecipient" value="#{transactionBean.selectedRecipientUsername}"
-                                         style="width: 100%;" required="true" requiredMessage="Please select a recipient member.">
-                            <f:selectItem itemLabel="-- Select Member Username --" itemValue="" />
-                            <f:selectItems value="#{transactionBean.activeRecipients}" var="m"
-                                           itemLabel="#{m.username} (#{m.fullName})"
-                                           itemValue="#{m.username}" />
-                        </p:selectOneMenu>
-
-                        <p:outputLabel for="transferAmount" value="Amount to Send (UGX):" style="margin-top: 10px; display: block;"/>
-                        <p:inputNumber id="transferAmount" value="#{transactionBean.transferAmount}" symbol="UGX "
-                                       decimalPlaces="0" min="1" style="width: 100%;" required="true" requiredMessage="Transfer amount is required." />
-
-                        <p:commandButton value="Send Money"
-                                         process="@form"
-                                         update=":msg :confirmTransferForm"
-                                         oncomplete="if (!args.validationFailed) PF('confirmTransferDlg').show();"
-                                         icon="pi pi-send"
-                                         styleClass="ui-button-primary" style="margin-top: 15px; width: 100%;" />
-                    </h:panelGrid>
-                </h:form>
-            </p:panel>
-        </div>
-
-        <!-- Loan Management Section -->
-        <p:panel header="Loan management">
-            <div class="loan-grid">
-                <!-- Apply for Loan -->
-                <p:panel header="Apply for a loan">
-                    <h:form id="loanApplyForm">
-                        <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
-                            <p:outputLabel for="appAmount" value="Requested Loan Amount (UGX):" />
-                            <p:inputNumber id="appAmount" value="#{loanBean.applyAmount}" symbol="UGX " decimalPlaces="0" min="1000" style="width: 100%;" required="true"/>
-                            <p:staticMessage severity="info" summary="Note:" detail="Max Loan = 3x Savings Balance. 10% flat interest apply." style="margin-top: 10px; width:100%;"/>
-                            <p:commandButton value="Submit Application" action="#{loanBean.handleApply}" update=":msg :memberLoansForm loanApplyForm" icon="pi pi-send" styleClass="ui-button-primary" style="margin-top: 15px; width: 100%;" />
-                        </h:panelGrid>
-                    </h:form>
-                </p:panel>
-
-                <!-- Repay Loan -->
-                <p:panel header="Repay an active loan">
-                    <h:form id="loanRepayForm">
-                        <h:panelGrid columns="1" style="width: 100%;" styleClass="form-stack">
-                            <p:outputLabel for="selectLoan" value="Select Approved Loan:" />
-                            <p:selectOneMenu id="selectLoan" value="#{loanBean.selectedLoanId}" style="width: 100%;" required="true">
-                                <f:selectItem itemLabel="-- Choose Loan --" itemValue="" />
-                                <f:selectItems value="#{loanBean.memberLoans}" var="l"
-                                               itemLabel="ID ##{l.id} - Bal: UGX #{l.remainingBalance} (#{l.status})"
-                                               itemValue="#{l.id}" />
-                            </p:selectOneMenu>
-
-                            <p:outputLabel for="repayAmount" value="Repayment Amount (UGX):" style="margin-top: 10px; display: block;"/>
-                            <p:inputNumber id="repayAmount" value="#{loanBean.repayAmount}" symbol="UGX " decimalPlaces="0" min="1" style="width: 100%;" required="true"/>
-
-                            <p:commandButton value="Make Payment" action="#{loanBean.handleRepay}" update=":msg :memberLoansForm :ledgerForm :balanceDisplay loanRepayForm" icon="pi pi-dollar" styleClass="ui-button-success" style="margin-top: 15px; width: 100%;" />
-                        </h:panelGrid>
-                    </h:form>
-                </p:panel>
+        <!-- ═══════════════ SIDEBAR ═══════════════ -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">
+                <span class="sidebar-brand-icon">K</span>
+                <span class="sidebar-brand-name">Kimwanyi SACCO</span>
             </div>
 
-            <!-- Member Loan History Table -->
-            <h:form id="memberLoansForm" style="margin-top: 20px;">
-                <p:dataTable var="loan" value="#{loanBean.memberLoans}" rows="5" paginator="true" emptyMessage="No loan history recorded.">
-                    <f:facet name="header">My Loan History</f:facet>
+            <nav class="sidebar-nav">
+                <span class="sidebar-section-label">Menu</span>
 
-                    <p:column headerText="Loan ID" style="text-align: center; width: 80px;">
-                        <h:outputText value="##{loan.id}" />
-                    </p:column>
-                    <p:column headerText="Principal">
-                        <h:outputText value="#{loan.principalAmount}">
-                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
-                        </h:outputText>
-                    </p:column>
-                    <p:column headerText="Interest (10%)">
-                        <h:outputText value="#{loan.interestAmount}">
-                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
-                        </h:outputText>
-                    </p:column>
-                    <p:column headerText="Total Owed">
-                        <h:outputText value="#{loan.totalAmount}">
-                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
-                        </h:outputText>
-                    </p:column>
-                    <p:column headerText="Amount Paid">
-                        <h:outputText value="#{loan.amountPaid}">
-                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
-                        </h:outputText>
-                    </p:column>
-                    <p:column headerText="Remaining Balance">
-                        <h:outputText value="#{loan.remainingBalance}" styleClass="amount-negative">
-                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
-                        </h:outputText>
-                    </p:column>
-                    <p:column headerText="Status" style="text-align: center;">
-                        <span class="status-pill" style="background-color: #{loan.status == 'APPROVED' ? '#1f7a4d' : (loan.status == 'PENDING' ? '#b86912' : (loan.status == 'PAID' ? '#547866' : '#b84040'))};">
-                            <h:outputText value="#{loan.status}" />
-                        </span>
-                    </p:column>
-                </p:dataTable>
+                <h:form id="navForm" styleClass="nav-form">
+                    <p:commandLink styleClass="nav-item #{transactionBean.activeSection == 'overview'     ? 'active' : ''}"
+                                   action="#{transactionBean.showSection('overview')}"
+                                   update=":navForm :mainContent" process="@this">
+                        <i class="pi pi-th-large" /><span>Overview</span>
+                    </p:commandLink>
+
+                    <p:commandLink styleClass="nav-item #{transactionBean.activeSection == 'transactions' ? 'active' : ''}"
+                                   action="#{transactionBean.showSection('transactions')}"
+                                   update=":navForm :mainContent" process="@this">
+                        <i class="pi pi-arrows-h" /><span>Transactions</span>
+                    </p:commandLink>
+
+                    <p:commandLink styleClass="nav-item #{transactionBean.activeSection == 'loans'        ? 'active' : ''}"
+                                   action="#{transactionBean.showSection('loans')}"
+                                   update=":navForm :mainContent" process="@this">
+                        <i class="pi pi-credit-card" /><span>Loans</span>
+                    </p:commandLink>
+
+                    <p:commandLink styleClass="nav-item #{transactionBean.activeSection == 'statement'    ? 'active' : ''}"
+                                   action="#{transactionBean.showSection('statement')}"
+                                   update=":navForm :mainContent" process="@this">
+                        <i class="pi pi-file-pdf" /><span>Statement</span>
+                    </p:commandLink>
+                </h:form>
+            </nav>
+
+            <h:form id="sidebarFooterForm" styleClass="sidebar-footer">
+                <p:commandButton value="Logout" action="#{authBean.logout}"
+                                 icon="pi pi-sign-out"
+                                 styleClass="ui-button-danger sidebar-logout" />
             </h:form>
-        </p:panel>
+        </aside>
 
-        <!-- Audit Trail Ledger Data Table -->
-        <h:form id="ledgerForm">
-            <p:dataTable var="tx" value="#{transactionBean.transactionHistory}" rows="10" paginator="true"
-                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                         rowsPerPageTemplate="5,10,20" emptyMessage="No transactions recorded for this account yet.">
+        <!-- ═══════════════ MAIN AREA ═══════════════ -->
+        <div class="admin-main">
 
-                <f:facet name="header">Account Transaction Ledger Audit</f:facet>
-
-                <p:column headerText="Transaction ID" style="text-align: center; width: 120px;">
-                    <h:outputText value="#{tx.id}" />
-                </p:column>
-
-                <p:column headerText="Timestamp">
-                    <h:outputText value="#{tx.createdAt}">
-                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" type="localDateTime" />
-                    </h:outputText>
-                </p:column>
-
-                <p:column headerText="Type" style="text-align: center; width: 150px;">
-                    <span class="status-pill" style="background-color: #{tx.type == 'DEPOSIT' ? '#1f7a4d' : '#b84040'};">
-                        <h:outputText value="#{tx.type}" />
+            <!-- Top Bar -->
+            <header class="admin-topbar">
+                <div class="topbar-left">
+                    <h2 class="topbar-title">
+                        <h:outputText value="Overview"     rendered="#{transactionBean.activeSection == 'overview'}" />
+                        <h:outputText value="Transactions" rendered="#{transactionBean.activeSection == 'transactions'}" />
+                        <h:outputText value="Loans"        rendered="#{transactionBean.activeSection == 'loans'}" />
+                        <h:outputText value="Statement"    rendered="#{transactionBean.activeSection == 'statement'}" />
+                    </h2>
+                </div>
+                <div class="topbar-right">
+                    <span class="topbar-user">
+                        <i class="pi pi-user" /> #{authBean.currentUser.username}
                     </span>
-                </p:column>
+                    <h:form id="refreshTopForm">
+                        <p:commandButton icon="pi pi-refresh" title="Refresh"
+                                         action="#{transactionBean.refreshLedger}"
+                                         update=":msg :navForm :mainContent"
+                                         styleClass="ui-button-outlined ui-button-secondary topbar-refresh" />
+                    </h:form>
+                </div>
+            </header>
 
-                <p:column headerText="Amount" style="text-align: right;">
-                    <h:outputText value="#{tx.amount}" style="font-weight: bold; color: #{tx.type == 'DEPOSIT' ? '#1f7a4d' : '#b84040'};">
-                        <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
-                    </h:outputText>
-                </p:column>
+            <!-- ═══ SECTION CONTENT ═══ -->
+            <h:panelGroup id="mainContent" layout="block" styleClass="admin-content">
 
-                <p:column headerText="Description">
-                    <h:outputText value="#{tx.description}" />
-                </p:column>
-            </p:dataTable>
-        </h:form>
+                <!-- ── OVERVIEW ── -->
+                <h:panelGroup layout="block" rendered="#{transactionBean.activeSection == 'overview'}">
 
-        <!-- Statement Action Bar & Dialog (WRAPPED IN H:FORM TO FIX UIForm WARNING) -->
-        <h:form id="statementForm">
-            <div class="section-heading">
-                <h3>Download your statement</h3>
-                <p:commandButton value="Generate Account Statement"
-                                 icon="pi pi-file-pdf"
-                                 type="button"
-                                 onclick="PF('statementDialog').show();"
-                                 styleClass="ui-button-help" />
-            </div>
-
-            <!-- Statement Print/PDF Dialog -->
-            <p:dialog header="Official Account Statement" widgetVar="statementDialog" modal="true" width="800"
-                      responsive="true" fitViewport="true" styleClass="statement-dialog">
-                <div id="printArea" style="padding: 20px; font-family: Arial, sans-serif;">
-                    <!-- Header -->
-                    <div style="border-bottom: 2px solid #2c3e50; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between;">
-                        <div>
-                            <h2 style="margin: 0; color: #2c3e50;">SECURE LEDGER SACCO</h2>
-                            <p style="margin: 5px 0 0 0; color: #7f8c8d;">Official Member Account Statement</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <p style="margin: 0;"><strong>Date:</strong>
-                                <h:outputText value="#{statementBean.memberStatement.generatedAt}">
-                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" type="localDateTime" />
+                    <!-- Balance hero card -->
+                    <h:panelGroup id="balanceDisplay" layout="block" styleClass="member-balance-hero">
+                        <div class="member-balance-inner">
+                            <div>
+                                <span class="balance-label">Available Savings Balance</span>
+                                <h:outputText value="#{transactionBean.currentBalance}" styleClass="balance-value">
+                                    <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
                                 </h:outputText>
-                            </p>
+                                <span class="balance-sub">Minimum balance: UGX 20,000 must remain at all times</span>
+                            </div>
+                            <i class="pi pi-wallet member-balance-icon" />
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Quick-action KPI tiles -->
+                    <div class="kpi-container" style="margin-bottom:28px;">
+                        <div class="kpi-card kpi-green" style="cursor:pointer;" onclick="">
+                            <div class="kpi-icon"><i class="pi pi-history" /></div>
+                            <div class="kpi-title">Total Transactions</div>
+                            <div class="kpi-value">#{transactionBean.transactionHistory.size()}</div>
+                        </div>
+                        <div class="kpi-card kpi-purple">
+                            <div class="kpi-icon"><i class="pi pi-credit-card" /></div>
+                            <div class="kpi-title">Active Loans</div>
+                            <div class="kpi-value">
+                                #{loanBean.memberLoans.stream().filter(l -> l.status.toString() == 'APPROVED').count()}
+                            </div>
+                        </div>
+                        <div class="kpi-card kpi-orange">
+                            <div class="kpi-icon"><i class="pi pi-clock" /></div>
+                            <div class="kpi-title">Pending Loans</div>
+                            <div class="kpi-value">
+                                #{loanBean.memberLoans.stream().filter(l -> l.status.toString() == 'PENDING').count()}
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Member Profile Summary -->
-                    <div style="background-color: #f8f9fa; border-radius: 6px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-between;">
-                        <div>
-                            <p style="margin: 3px 0;"><strong>Member Name:</strong> #{statementBean.memberStatement.member.username}</p>
-                            <p style="margin: 3px 0;"><strong>National ID:</strong> #{statementBean.memberStatement.member.nationalId}</p>
-                        </div>
-                        <div>
-                            <p style="margin: 3px 0;"><strong>Total Deposits:</strong> UGX #{statementBean.memberStatement.totalDeposits}</p>
-                            <p style="margin: 3px 0;"><strong>Total Withdrawals:</strong> UGX #{statementBean.memberStatement.totalWithdrawals}</p>
-                            <p style="margin: 3px 0; color: #27ae60; font-weight: bold;"><strong>Current Balance:</strong> UGX #{statementBean.memberStatement.currentBalance}</p>
-                        </div>
+                    <!-- Recent transactions mini-table -->
+                    <h:form id="recentTxForm">
+                        <p:panel header="Recent transactions" styleClass="content-panel">
+                            <p:dataTable var="tx" value="#{transactionBean.transactionHistory}"
+                                         rows="5" paginator="false"
+                                         emptyMessage="No transactions yet.">
+                                <p:column headerText="Date" style="width:155px;">
+                                    <h:outputText value="#{tx.createdAt}">
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm" type="localDateTime" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Type" style="width:120px;text-align:center;">
+                                    <span class="status-pill"
+                                          style="background:#{tx.type == 'DEPOSIT' ? '#1f7a4d' : '#b84040'};">
+                                        <h:outputText value="#{tx.type}" />
+                                    </span>
+                                </p:column>
+                                <p:column headerText="Amount" style="text-align:right;width:140px;">
+                                    <h:outputText value="#{tx.amount}"
+                                                  style="font-weight:700;color:#{tx.type == 'DEPOSIT' ? '#1f7a4d' : '#b84040'};">
+                                        <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Description">
+                                    <h:outputText value="#{tx.description}" />
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- ── TRANSACTIONS ── -->
+                <h:panelGroup layout="block" rendered="#{transactionBean.activeSection == 'transactions'}">
+
+                    <!-- Balance strip -->
+                    <h:panelGroup id="txBalanceDisplay" layout="block" styleClass="member-balance-strip">
+                        <span class="strip-label">Your balance:</span>
+                        <h:outputText value="#{transactionBean.currentBalance}" styleClass="strip-value">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </h:panelGroup>
+
+                    <!-- Deposit / Withdraw / Transfer cards -->
+                    <div class="action-grid" style="margin-bottom:28px;">
+
+                        <p:panel header="Deposit funds" styleClass="content-panel">
+                            <h:form id="depositForm">
+                                <h:panelGrid columns="1" style="width:100%;" styleClass="form-stack">
+                                    <p:outputLabel for="depAmount" value="Amount to deposit (UGX):" />
+                                    <p:inputNumber id="depAmount" value="#{transactionBean.amount}"
+                                                   symbol="UGX " decimalPlaces="0" min="1"
+                                                   style="width:100%;" required="true" />
+                                    <p:commandButton value="Deposit"
+                                                     action="#{transactionBean.deposit}"
+                                                     update=":msg :txBalanceDisplay depositForm :navForm"
+                                                     icon="pi pi-plus-circle"
+                                                     styleClass="ui-button-success"
+                                                     style="margin-top:14px;width:100%;" />
+                                </h:panelGrid>
+                            </h:form>
+                        </p:panel>
+
+                        <p:panel header="Withdraw funds" styleClass="content-panel">
+                            <h:form id="withdrawForm">
+                                <h:panelGrid columns="1" style="width:100%;" styleClass="form-stack">
+                                    <p:outputLabel for="witAmount" value="Amount to withdraw (UGX):" />
+                                    <p:inputNumber id="witAmount" value="#{transactionBean.amount}"
+                                                   symbol="UGX " decimalPlaces="0" min="1"
+                                                   style="width:100%;" required="true" />
+                                    <p:commandButton value="Withdraw"
+                                                     action="#{transactionBean.withdraw}"
+                                                     update=":msg :txBalanceDisplay withdrawForm :navForm"
+                                                     icon="pi pi-minus-circle"
+                                                     styleClass="ui-button-warning"
+                                                     style="margin-top:14px;width:100%;" />
+                                </h:panelGrid>
+                            </h:form>
+                        </p:panel>
+
+                        <p:panel header="Send money" styleClass="content-panel">
+                            <h:form id="transferForm">
+                                <h:panelGrid columns="1" style="width:100%;" styleClass="form-stack">
+                                    <p:outputLabel for="selectRecipient" value="Recipient member:" />
+                                    <p:selectOneMenu id="selectRecipient"
+                                                     value="#{transactionBean.selectedRecipientUsername}"
+                                                     style="width:100%;" required="true"
+                                                     requiredMessage="Please select a recipient.">
+                                        <f:selectItem itemLabel="-- Select Member --" itemValue="" />
+                                        <f:selectItems value="#{transactionBean.activeRecipients}" var="m"
+                                                       itemLabel="#{m.username} (#{m.fullName})"
+                                                       itemValue="#{m.username}" />
+                                    </p:selectOneMenu>
+                                    <p:outputLabel for="transferAmt" value="Amount (UGX):"
+                                                   style="margin-top:10px;display:block;" />
+                                    <p:inputNumber id="transferAmt" value="#{transactionBean.transferAmount}"
+                                                   symbol="UGX " decimalPlaces="0" min="1"
+                                                   style="width:100%;" required="true"
+                                                   requiredMessage="Transfer amount is required." />
+                                    <p:commandButton value="Send Money"
+                                                     process="@form"
+                                                     update=":msg :confirmTransferForm"
+                                                     oncomplete="if (!args.validationFailed) PF('confirmTransferDlg').show();"
+                                                     icon="pi pi-send"
+                                                     styleClass="ui-button-primary"
+                                                     style="margin-top:14px;width:100%;" />
+                                </h:panelGrid>
+                            </h:form>
+                        </p:panel>
                     </div>
 
-                    <!-- Statement Table -->
-                    <p:dataTable var="tx" value="#{statementBean.memberStatement.transactions}" style="width: 100%;">
-                        <p:column headerText="Tx ID" style="width: 80px; text-align: center;">
-                            <h:outputText value="##{tx.id}" />
-                        </p:column>
-                        <p:column headerText="Date &amp; Time">
-                            <h:outputText value="#{tx.createdAt}">
-                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" type="localDateTime" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Type" style="text-align: center;">
-                            <h:outputText value="#{tx.type}" style="font-weight: bold; color: #{tx.type == 'DEPOSIT' ? '#27ae60' : '#c0392b'};" />
-                        </p:column>
-                        <p:column headerText="Amount (UGX)" style="text-align: right;">
-                            <h:outputText value="#{tx.amount}">
-                                <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Description">
-                            <h:outputText value="#{tx.description}" />
-                        </p:column>
-                    </p:dataTable>
+                    <!-- Full ledger -->
+                    <h:form id="ledgerForm">
+                        <p:panel header="Transaction history" styleClass="content-panel">
+                            <p:dataTable var="tx" value="#{transactionBean.transactionHistory}"
+                                         rows="10" paginator="true"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}"
+                                         rowsPerPageTemplate="5,10,20"
+                                         emptyMessage="No transactions recorded yet."
+                                         sortField="createdAt" sortOrder="DESCENDING">
+                                <p:column headerText="ID" style="width:70px;text-align:center;">
+                                    <h:outputText value="#{tx.id}" />
+                                </p:column>
+                                <p:column headerText="Timestamp" sortBy="#{tx.createdAt}" style="width:165px;">
+                                    <h:outputText value="#{tx.createdAt}">
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm" type="localDateTime" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Type" style="width:130px;text-align:center;">
+                                    <span class="status-pill"
+                                          style="background:#{tx.type == 'DEPOSIT' ? '#1f7a4d' : '#b84040'};">
+                                        <h:outputText value="#{tx.type}" />
+                                    </span>
+                                </p:column>
+                                <p:column headerText="Amount" style="text-align:right;width:145px;">
+                                    <h:outputText value="#{tx.amount}"
+                                                  style="font-weight:700;color:#{tx.type == 'DEPOSIT' ? '#1f7a4d' : '#b84040'};">
+                                        <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Description">
+                                    <h:outputText value="#{tx.description}" />
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- ── LOANS ── -->
+                <h:panelGroup layout="block" rendered="#{transactionBean.activeSection == 'loans'}">
+                    <div class="loan-grid" style="margin-bottom:28px;">
+
+                        <p:panel header="Apply for a loan" styleClass="content-panel">
+                            <h:form id="loanApplyForm">
+                                <h:panelGrid columns="1" style="width:100%;" styleClass="form-stack">
+                                    <p:outputLabel for="appAmount" value="Requested loan amount (UGX):" />
+                                    <p:inputNumber id="appAmount" value="#{loanBean.applyAmount}"
+                                                   symbol="UGX " decimalPlaces="0" min="1000"
+                                                   style="width:100%;" required="true" />
+                                    <p:staticMessage severity="info" summary="Note:"
+                                                     detail="Max loan = 3× your savings balance. 10% flat interest applies."
+                                                     style="margin-top:10px;width:100%;" />
+                                    <p:commandButton value="Submit Application"
+                                                     action="#{loanBean.handleApply}"
+                                                     update=":msg :memberLoansForm loanApplyForm"
+                                                     icon="pi pi-send" styleClass="ui-button-primary"
+                                                     style="margin-top:14px;width:100%;" />
+                                </h:panelGrid>
+                            </h:form>
+                        </p:panel>
+
+                        <p:panel header="Repay an active loan" styleClass="content-panel">
+                            <h:form id="loanRepayForm">
+                                <h:panelGrid columns="1" style="width:100%;" styleClass="form-stack">
+                                    <p:outputLabel for="selectLoan" value="Select approved loan:" />
+                                    <p:selectOneMenu id="selectLoan" value="#{loanBean.selectedLoanId}"
+                                                     style="width:100%;" required="true">
+                                        <f:selectItem itemLabel="-- Choose Loan --" itemValue="" />
+                                        <f:selectItems value="#{loanBean.memberLoans}" var="l"
+                                                       itemLabel="Loan ##{l.id}  |  Bal: UGX #{l.remainingBalance}  (#{l.status})"
+                                                       itemValue="#{l.id}" />
+                                    </p:selectOneMenu>
+                                    <p:outputLabel for="repayAmt" value="Repayment amount (UGX):"
+                                                   style="margin-top:10px;display:block;" />
+                                    <p:inputNumber id="repayAmt" value="#{loanBean.repayAmount}"
+                                                   symbol="UGX " decimalPlaces="0" min="1"
+                                                   style="width:100%;" required="true" />
+                                    <p:commandButton value="Make Payment"
+                                                     action="#{loanBean.handleRepay}"
+                                                     update=":msg :memberLoansForm :txBalanceDisplay loanRepayForm :navForm"
+                                                     icon="pi pi-dollar" styleClass="ui-button-success"
+                                                     style="margin-top:14px;width:100%;" />
+                                </h:panelGrid>
+                            </h:form>
+                        </p:panel>
+                    </div>
+
+                    <!-- Loan history table -->
+                    <h:form id="memberLoansForm">
+                        <p:panel header="My loan history" styleClass="content-panel">
+                            <p:dataTable var="loan" value="#{loanBean.memberLoans}"
+                                         rows="5" paginator="true"
+                                         emptyMessage="No loan history recorded.">
+                                <p:column headerText="Loan ID" style="width:80px;text-align:center;">
+                                    <h:outputText value="##{loan.id}" />
+                                </p:column>
+                                <p:column headerText="Principal">
+                                    <h:outputText value="#{loan.principalAmount}">
+                                        <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Interest (10%)">
+                                    <h:outputText value="#{loan.interestAmount}">
+                                        <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Total Owed">
+                                    <h:outputText value="#{loan.totalAmount}">
+                                        <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Paid">
+                                    <h:outputText value="#{loan.amountPaid}">
+                                        <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Remaining">
+                                    <h:outputText value="#{loan.remainingBalance}" styleClass="amount-negative">
+                                        <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Status" style="text-align:center;width:110px;">
+                                    <p:tag value="#{loan.status}"
+                                           severity="#{loan.status.toString() == 'APPROVED' ? 'success' :
+                                                       (loan.status.toString() == 'PAID'     ? 'info'    :
+                                                       (loan.status.toString() == 'PENDING'  ? 'warn'    : 'danger'))}" />
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- ── STATEMENT ── -->
+                <h:panelGroup layout="block" rendered="#{transactionBean.activeSection == 'statement'}">
+                    <h:form id="statementForm">
+                        <p:panel styleClass="content-panel">
+                            <f:facet name="header">
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                                    <span>Account Statement</span>
+                                    <p:commandButton value="Print / Save as PDF"
+                                                     icon="pi pi-print" type="button"
+                                                     onclick="window.print();"
+                                                     styleClass="ui-button-success ui-button-sm" />
+                                </div>
+                            </f:facet>
+
+                            <div id="printArea" style="padding:10px;font-family:Arial,sans-serif;">
+                                <!-- Header -->
+                                <div style="border-bottom:2px solid #2c3e50;padding-bottom:14px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;">
+                                    <div>
+                                        <h2 style="margin:0;color:#2c3e50;">KIMWANYI SACCO</h2>
+                                        <p style="margin:4px 0 0;color:#7f8c8d;">Official Member Account Statement</p>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <p style="margin:0;"><strong>Generated:</strong>
+                                            <h:outputText value="#{statementBean.memberStatement.generatedAt}">
+                                                <f:convertDateTime pattern="dd MMM yyyy HH:mm" type="localDateTime" />
+                                            </h:outputText>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Member summary -->
+                                <div style="background:#f8f9fa;border-radius:6px;padding:14px;margin-bottom:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                                    <div>
+                                        <p style="margin:3px 0;"><strong>Member:</strong> #{statementBean.memberStatement.member.username}</p>
+                                        <p style="margin:3px 0;"><strong>Full Name:</strong> #{statementBean.memberStatement.member.fullName}</p>
+                                        <p style="margin:3px 0;"><strong>National ID:</strong> #{statementBean.memberStatement.member.nationalId}</p>
+                                    </div>
+                                    <div>
+                                        <p style="margin:3px 0;"><strong>Total Deposits:</strong> UGX #{statementBean.memberStatement.totalDeposits}</p>
+                                        <p style="margin:3px 0;"><strong>Total Withdrawals:</strong> UGX #{statementBean.memberStatement.totalWithdrawals}</p>
+                                        <p style="margin:3px 0;color:#27ae60;font-weight:700;"><strong>Current Balance:</strong> UGX #{statementBean.memberStatement.currentBalance}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Transactions table -->
+                                <p:dataTable var="tx" value="#{statementBean.memberStatement.transactions}" style="width:100%;">
+                                    <p:column headerText="Tx ID" style="width:70px;text-align:center;">
+                                        <h:outputText value="##{tx.id}" />
+                                    </p:column>
+                                    <p:column headerText="Date &amp; Time" style="width:155px;">
+                                        <h:outputText value="#{tx.createdAt}">
+                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" type="localDateTime" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Type" style="text-align:center;width:110px;">
+                                        <h:outputText value="#{tx.type}"
+                                                      style="font-weight:700;color:#{tx.type == 'DEPOSIT' ? '#27ae60' : '#c0392b'};" />
+                                    </p:column>
+                                    <p:column headerText="Amount (UGX)" style="text-align:right;width:140px;">
+                                        <h:outputText value="#{tx.amount}">
+                                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Description">
+                                        <h:outputText value="#{tx.description}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+
+            </h:panelGroup><!-- /#mainContent -->
+        </div><!-- /.admin-main -->
+    </div><!-- /.admin-layout -->
+
+    <!-- Transfer Confirmation Dialog (outside mainContent so it survives re-render) -->
+    <h:form id="confirmTransferForm">
+        <p:dialog header="Confirm Money Transfer" widgetVar="confirmTransferDlg"
+                  modal="true" width="450" responsive="true" resizable="false">
+            <div style="padding:10px;text-align:center;">
+                <i class="pi pi-exclamation-triangle"
+                   style="font-size:3rem;color:#f39c12;margin-bottom:1rem;display:block;" />
+                <h3 style="margin-top:0;color:#2c3e50;">Confirm fund transfer</h3>
+                <div style="background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:14px;margin:14px 0;text-align:left;">
+                    <p style="margin:5px 0;"><strong>Recipient:</strong>
+                        #{transactionBean.selectedRecipientUsername}
+                        <h:panelGroup rendered="#{not empty transactionBean.selectedRecipientUser}">
+                            (#{transactionBean.selectedRecipientUser.fullName})
+                        </h:panelGroup>
+                    </p>
+                    <p style="margin:5px 0;"><strong>Amount:</strong>
+                        <h:outputText value="#{transactionBean.transferAmount}"
+                                      style="color:#27ae60;font-weight:700;">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p>
+                    <p style="margin:5px 0;"><strong>Your balance:</strong>
+                        <h:outputText value="#{transactionBean.currentBalance}">
+                            <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                        </h:outputText>
+                    </p>
                 </div>
-
-                <f:facet name="footer">
-                    <p:commandButton value="Print / Save as PDF" icon="pi pi-print" type="button"
-                                     onclick="window.print();" styleClass="ui-button-success" />
-                    <p:commandButton value="Close" icon="pi pi-times" onclick="PF('statementDialog').hide();" styleClass="ui-button-secondary" />
-                </f:facet>
-            </p:dialog>
-        </h:form>
-
-        <!-- Transfer Confirmation Dialog -->
-        <h:form id="confirmTransferForm">
-            <p:dialog header="Confirm Money Transfer" widgetVar="confirmTransferDlg" modal="true" width="450"
-                      responsive="true" resizable="false">
-                <div style="padding: 10px; text-align: center;">
-                    <i class="pi pi-exclamation-triangle" style="font-size: 3rem; color: #f39c12; margin-bottom: 1rem; display: block;"></i>
-                    <h3 style="margin-top: 0; color: #2c3e50;">Are you sure you want to transfer funds?</h3>
-
-                    <div style="background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin: 15px 0; text-align: left;">
-                        <p style="margin: 5px 0;"><strong>Recipient:</strong> #{transactionBean.selectedRecipientUsername}
-                            <h:panelGroup rendered="#{not empty transactionBean.selectedRecipientUser}">
-                                (#{transactionBean.selectedRecipientUser.fullName})
-                            </h:panelGroup>
-                        </p>
-                        <p style="margin: 5px 0;"><strong>Amount to Send:</strong>
-                            <h:outputText value="#{transactionBean.transferAmount}" style="color: #27ae60; font-weight: bold;">
-                                <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
-                            </h:outputText>
-                        </p>
-                        <p style="margin: 5px 0;"><strong>Your Available Balance:</strong>
-                            <h:outputText value="#{transactionBean.currentBalance}">
-                                <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
-                            </h:outputText>
-                        </p>
-                    </div>
-
-                    <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 0;">This transaction cannot be reversed once confirmed.</p>
+                <p style="color:#7f8c8d;font-size:.9em;margin-bottom:0;">This transaction cannot be reversed once confirmed.</p>
+            </div>
+            <f:facet name="footer">
+                <div style="display:flex;justify-content:space-between;gap:10px;">
+                    <p:commandButton value="Cancel" icon="pi pi-times"
+                                     onclick="PF('confirmTransferDlg').hide();"
+                                     type="button" styleClass="ui-button-secondary" style="flex:1;" />
+                    <p:commandButton value="Confirm &amp; Send" icon="pi pi-check"
+                                     action="#{transactionBean.transfer}"
+                                     update=":msg :mainContent :navForm"
+                                     oncomplete="PF('confirmTransferDlg').hide();"
+                                     styleClass="ui-button-success" style="flex:1;" />
                 </div>
+            </f:facet>
+        </p:dialog>
+    </h:form>
 
-                <f:facet name="footer">
-                    <div style="display: flex; justify-content: space-between; gap: 10px;">
-                        <p:commandButton value="No, Cancel" icon="pi pi-times"
-                                         onclick="PF('confirmTransferDlg').hide();"
-                                         type="button" styleClass="ui-button-secondary" style="flex: 1;" />
-                        <p:commandButton value="Yes, Confirm &amp; Send" icon="pi pi-check"
-                                         action="#{transactionBean.transfer}"
-                                         update=":msg :ledgerForm :balanceDisplay :transferForm"
-                                         oncomplete="PF('confirmTransferDlg').hide();"
-                                         styleClass="ui-button-success" style="flex: 1;" />
-                    </div>
-                </f:facet>
-            </p:dialog>
-        </h:form>
-    </div>
 </h:body>
 </html>
