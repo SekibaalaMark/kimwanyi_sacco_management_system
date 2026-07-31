@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="FacetManager">
+    <facet type="web" name="Web">
+      <configuration>
+        <descriptors>
+          <deploymentDescriptor name="web.xml" url="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" />
+        </descriptors>
+        <webroots>
+          <root url="file://$PROJECT_DIR$/src/main/webapp" relative="/" />
+        </webroots>
+      </configuration>
+    </facet>
+    <facet type="jsf" name="JSF">
+      <configuration>
+        <option name="version" value="3.0" />
+        <option name="descriptorsUrl" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/faces-config.xml" />
+      </configuration>
+    </facet>
+  </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
