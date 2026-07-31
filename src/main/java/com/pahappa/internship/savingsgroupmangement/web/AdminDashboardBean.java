@@ -1,5 +1,6 @@
 package com.pahappa.internship.savingsgroupmangement.web;
 
+import com.pahappa.internship.savingsgroupmangement.dto.ActivityLogEntry;
 import com.pahappa.internship.savingsgroupmangement.dto.AdminSummaryDTO;
 import com.pahappa.internship.savingsgroupmangement.model.Loan;
 import com.pahappa.internship.savingsgroupmangement.model.User;
@@ -13,6 +14,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 @Named
@@ -25,10 +27,11 @@ public class AdminDashboardBean implements Serializable {
     @Inject
     private LoanService loanService;
 
-    private AdminSummaryDTO summary;
-    private List<Loan> pendingLoans;
-    private List<User> members;
-    private Long selectedLoanId;
+    private AdminSummaryDTO      summary;
+    private List<Loan>           pendingLoans;
+    private List<User>           members;
+    private List<ActivityLogEntry> activityLog = Collections.emptyList();
+    private Long   selectedLoanId;
     private String rejectionReason;
     private String activeSection = "overview";
 
@@ -38,14 +41,20 @@ public class AdminDashboardBean implements Serializable {
     }
 
     public void refreshDashboard() {
-        this.summary = adminService.getDashboardSummary();
+        this.summary      = adminService.getDashboardSummary();
         this.pendingLoans = loanService.getPendingLoans();
-        this.members = adminService.getAllMembers();
+        this.members      = adminService.getAllMembers();
+        if ("logs".equals(this.activeSection)) {
+            this.activityLog = adminService.buildActivityLog();
+        }
     }
 
     public void showSection(String section) {
         this.activeSection = section;
         refreshDashboard();
+        if ("logs".equals(section)) {
+            this.activityLog = adminService.buildActivityLog();
+        }
     }
 
     public void approveLoan(Long loanId) {
@@ -108,6 +117,8 @@ public class AdminDashboardBean implements Serializable {
 
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+
+    public List<ActivityLogEntry> getActivityLog() { return activityLog; }
 
     public String getActiveSection() { return activeSection; }
     public void setActiveSection(String activeSection) { this.activeSection = activeSection; }

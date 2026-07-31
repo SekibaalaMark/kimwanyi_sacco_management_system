@@ -146,7 +146,9 @@ public class TransactionDAO {
 
     public List<Transaction> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Transaction t ORDER BY t.createdAt DESC", Transaction.class)
+            return session.createQuery(
+                    "SELECT t FROM Transaction t JOIN FETCH t.user ORDER BY t.createdAt DESC",
+                    Transaction.class)
                     .getResultList();
         } catch (Exception e) {
             e.printStackTrace();
