@@ -9,9 +9,7 @@ public class HibernateUtil {
     private static SessionFactory buildSessionFactory() {
         try {
             Configuration configuration = new Configuration().configure();
-            configuration.setProperty("hibernate.connection.url", requiredEnvironmentVariable("DB_URL"));
-            configuration.setProperty("hibernate.connection.username", requiredEnvironmentVariable("DB_USERNAME"));
-            configuration.setProperty("hibernate.connection.password", requiredEnvironmentVariable("DB_PASSWORD"));
+
             return configuration.buildSessionFactory();
         } catch (Throwable ex) {
             System.err.println("Database Initial SessionFactory configuration failed: " + ex);
