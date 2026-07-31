@@ -10,8 +10,10 @@ import org.hibernate.LockMode;
 import org.hibernate.query.Query;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 @ApplicationScoped
 public class TransactionDAO {
@@ -30,8 +32,9 @@ public class TransactionDAO {
 
 
     public User transfer(Long senderId, String recipientNationalId, Double amount) throws Exception {
+        Session session = HibernateUtil.getSessionFactory().openSession();
         org.hibernate.Transaction tx = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try {
             tx = session.beginTransaction();
 
             User sender = session.get(User.class, senderId, LockMode.PESSIMISTIC_WRITE);
@@ -57,8 +60,22 @@ public class TransactionDAO {
                     .uniqueResult();
             double availableBalance = balance != null ? balance : 0.0;
             double minimumBalance = 20000.0;
+
+            NumberFormat ugx = NumberFormat.getNumberInstance(Locale.US);
+            ugx.setMaximumFractionDigits(0);
+
+            if (amount > availableBalance) {
+                throw new Exception(
+                    "Transfer failed: insufficient funds. Your current balance is UGX " +
+                    ugx.format(availableBalance) + " but you are trying to send UGX " +
+                    ugx.format(amount) + ".");
+            }
             if (amount > availableBalance - minimumBalance) {
-                throw new Exception("Transfer failed: insufficient available funds. A minimum balance of UGX 20,000 must remain.");
+                throw new Exception(
+                    "Transfer failed: this transfer would drop your balance below the required minimum of UGX 20,000. " +
+                    "Your current balance is UGX " + ugx.format(availableBalance) +
+                    " and the most you can send is UGX " +
+                    ugx.format(Math.max(0, availableBalance - minimumBalance)) + ".");
             }
 
             Transaction debit = new Transaction();
@@ -80,6 +97,8 @@ public class TransactionDAO {
         } catch (Exception e) {
             if (tx != null && tx.isActive()) tx.rollback();
             throw e;
+        } finally {
+            session.close();
         }
     }
 
