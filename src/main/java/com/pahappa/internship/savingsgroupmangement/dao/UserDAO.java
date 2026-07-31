@@ -89,6 +89,19 @@ public class UserDAO {
         }
     }
 
+    public List<User> findActiveMembersExcept(Long currentUserId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM User u WHERE u.role = :role AND u.active = true AND u.id != :currentUserId ORDER BY u.username ASC";
+            return session.createQuery(hql, User.class)
+                    .setParameter("role", Role.MEMBER)
+                    .setParameter("currentUserId", currentUserId)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
 
     public void updateStatus(Long userId, boolean active) {
         Transaction transaction = null;
