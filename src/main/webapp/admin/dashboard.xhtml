@@ -49,6 +49,13 @@
                         <i class="pi pi-users" />
                         <span>Members</span>
                     </p:commandLink>
+
+                    <p:commandLink styleClass="nav-item #{adminDashboardBean.activeSection == 'logs' ? 'active' : ''}"
+                                   action="#{adminDashboardBean.showSection('logs')}"
+                                   update=":navForm :mainContent" process="@this">
+                        <i class="pi pi-list" />
+                        <span>Activity Logs</span>
+                    </p:commandLink>
                 </h:form>
             </nav>
 
@@ -66,9 +73,10 @@
             <header class="admin-topbar">
                 <div class="topbar-left">
                     <h2 class="topbar-title">
-                        <h:outputText value="Overview" rendered="#{adminDashboardBean.activeSection == 'overview'}" />
+                        <h:outputText value="Overview"          rendered="#{adminDashboardBean.activeSection == 'overview'}" />
                         <h:outputText value="Loan Applications" rendered="#{adminDashboardBean.activeSection == 'loans'}" />
                         <h:outputText value="Member Management" rendered="#{adminDashboardBean.activeSection == 'members'}" />
+                        <h:outputText value="Activity Logs"     rendered="#{adminDashboardBean.activeSection == 'logs'}" />
                     </h2>
                 </div>
                 <div class="topbar-right">
@@ -263,6 +271,64 @@
                             <p:commandButton value="Cancel" type="button" styleClass="ui-confirmdialog-no ui-button-flat" />
                             <p:commandButton value="Proceed" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" />
                         </p:confirmDialog>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- ── ACTIVITY LOGS ── -->
+                <h:panelGroup layout="block" rendered="#{adminDashboardBean.activeSection == 'logs'}">
+                    <h:form id="activityLogForm">
+                        <p:panel styleClass="content-panel">
+                            <f:facet name="header">
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                                    <span>System Activity Log</span>
+                                    <p:commandButton value="Refresh Log" icon="pi pi-refresh"
+                                                     action="#{adminDashboardBean.showSection('logs')}"
+                                                     update=":navForm :mainContent"
+                                                     styleClass="ui-button-outlined ui-button-secondary ui-button-sm" />
+                                </div>
+                            </f:facet>
+
+                            <p:dataTable id="logTable"
+                                         var="entry"
+                                         value="#{adminDashboardBean.activityLog}"
+                                         rows="25"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} entries"
+                                         rowsPerPageTemplate="10,25,50"
+                                         emptyMessage="No activity recorded yet."
+                                         filterDisplay="row"
+                                         sortField="timestamp" sortOrder="DESCENDING">
+
+                                <p:column headerText="Timestamp" sortBy="#{entry.timestamp}" style="width:165px;white-space:nowrap;">
+                                    <h:outputText value="#{entry.timestamp}">
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" type="localDateTime" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Category" filterBy="#{entry.badgeLabel}" filterMatchMode="contains" style="width:140px;text-align:center;">
+                                    <span class="status-pill" style="#{entry.badgeStyle}">
+                                        <h:outputText value="#{entry.badgeLabel}" />
+                                    </span>
+                                </p:column>
+
+                                <p:column headerText="Actor" filterBy="#{entry.actor}" filterMatchMode="contains" style="width:130px;">
+                                    <h:outputText value="#{entry.actor}" style="font-weight:600;" />
+                                </p:column>
+
+                                <p:column headerText="Description" filterBy="#{entry.detail}" filterMatchMode="contains">
+                                    <h:outputText value="#{entry.detail}" />
+                                </p:column>
+
+                                <p:column headerText="Amount" style="width:140px;text-align:right;">
+                                    <h:outputText value="#{entry.amount}" rendered="#{entry.amount != null}"
+                                                  style="font-weight:600;">
+                                        <f:convertNumber type="currency" currencySymbol="UGX " maxFractionDigits="0" />
+                                    </h:outputText>
+                                    <h:outputText value="—" rendered="#{entry.amount == null}" style="color:#aaa;" />
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
                     </h:form>
                 </h:panelGroup>
 
