@@ -77,4 +77,31 @@ public class TransactionService {
     public Double getUserBalance(Long userId) {
         return transactionDAO.calculateTotalBalance(userId);
     }
+
+    public List<User> getActiveTransferRecipients(Long currentUserId) {
+        if (currentUserId == null) return java.util.Collections.emptyList();
+        return userDAO.findActiveMembersExcept(currentUserId);
+    }
+
+    public User transferByUsername(User sender, String recipientUsername, Double amount) throws Exception {
+        if (sender == null || sender.getId() == null) {
+            throw new Exception("Transfer failed: please log in again.");
+        }
+        if (recipientUsername == null || recipientUsername.trim().isEmpty()) {
+            throw new Exception("Transfer failed: please select a recipient.");
+        }
+        if (amount == null || amount <= 0) {
+            throw new Exception("Transfer failed: the amount must be greater than zero.");
+        }
+
+        User recipient = userDAO.findByUsername(recipientUsername.trim());
+        if (recipient == null || !recipient.isActive() || recipient.getRole() != Role.MEMBER) {
+            throw new Exception("Selected member recipient is invalid or inactive.");
+        }
+        if (sender.getId().equals(recipient.getId())) {
+            throw new Exception("You cannot send money to yourself.");
+        }
+
+        return transactionDAO.transfer(sender.getId(), recipient.getNationalId(), amount);
+    }
 }
