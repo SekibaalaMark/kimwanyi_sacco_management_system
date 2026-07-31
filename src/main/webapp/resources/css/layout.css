@@ -3,13 +3,22 @@
     --green-800: #175c3a;
     --green-700: #1f7a4d;
     --green-100: #e7f4eb;
-    --green-50: #f4faf6;
-    --ink: #1d2b24;
-    --muted: #69776f;
-    --line: #dce8df;
-    --surface: #ffffff;
-    --warning: #b86912;
-    --danger: #b84040;
+    --green-50:  #f4faf6;
+    --ink:       #1d2b24;
+    --muted:     #69776f;
+    --line:      #dce8df;
+    --surface:   #ffffff;
+    --warning:   #b86912;
+    --danger:    #b84040;
+
+    /* Admin sidebar */
+    --sb-width:    240px;
+    --sb-bg:       #0f2d1e;
+    --sb-hover:    #183d28;
+    --sb-active:   #1f7a4d;
+    --sb-text:     #c8ddd1;
+    --sb-muted:    #6b8f7b;
+    --topbar-h:    58px;
 }
 
 * { box-sizing: border-box; }
@@ -22,6 +31,169 @@ body {
     padding: 0;
 }
 
+/* ─────────────────────────────────────────
+   ADMIN SIDEBAR LAYOUT
+───────────────────────────────────────── */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f0f4f2;
+}
+
+/* Sidebar */
+.admin-sidebar {
+    width: var(--sb-width);
+    min-width: var(--sb-width);
+    background: var(--sb-bg);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 20px 18px 18px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
+}
+.sidebar-brand-icon {
+    width: 34px; height: 34px;
+    background: var(--green-700);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+}
+.sidebar-brand-name {
+    color: #fff;
+    font-size: .92rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 16px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.sidebar-section-label {
+    display: block;
+    color: var(--sb-muted);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 4px 8px 8px;
+}
+
+/* nav-form strips default form margin */
+.nav-form { margin: 0; padding: 0; display: contents; }
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--sb-text) !important;
+    text-decoration: none !important;
+    font-size: .9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    position: relative;
+}
+.nav-item:hover  { background: var(--sb-hover); color: #fff !important; }
+.nav-item.active { background: var(--sb-active); color: #fff !important; font-weight: 700; }
+.nav-item .pi    { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+.nav-badge {
+    margin-left: auto;
+    background: #c0392b;
+    color: #fff;
+    font-size: .68rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 999px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    padding: 14px 10px;
+    border-top: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
+}
+.sidebar-logout {
+    width: 100% !important;
+    justify-content: center;
+}
+
+/* Main area */
+.admin-main {
+    margin-left: var(--sb-width);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Topbar */
+.admin-topbar {
+    height: var(--topbar-h);
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+.topbar-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--green-900);
+    letter-spacing: -.02em;
+}
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.topbar-user {
+    color: var(--muted);
+    font-size: .88rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.topbar-refresh .ui-button-text { display: none; }
+.topbar-refresh { width: 34px !important; height: 34px !important; padding: 0 !important; }
+
+/* Content area */
+.admin-content {
+    padding: 28px 28px 44px;
+    flex: 1;
+}
+.content-panel { margin-bottom: 0; }
+
+/* KPI icon row */
+.kpi-icon { font-size: 1.3rem; color: var(--green-700); margin-bottom: 8px; }
+
+/* ─────────────────────────────────────────
+   MEMBER DASHBOARD (unchanged prefix)
+───────────────────────────────────────── */
 .dashboard-shell { max-width: 1280px; margin: 0 auto; padding: 28px 24px 44px; }
 
 .dashboard-header {
@@ -78,6 +250,48 @@ body {
 .amount-positive { color: var(--green-700); font-weight: 700; }.amount-negative { color: var(--danger); font-weight: 700; }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 28px 0 10px; color: var(--green-900); }
 
+/* ─────────────────────────────────────────
+   MEMBER DASHBOARD — balance hero & strip
+───────────────────────────────────────── */
+.member-balance-hero {
+    margin-bottom: 26px;
+    padding: 28px 32px;
+    border-radius: 14px;
+    background: linear-gradient(120deg, var(--green-900), var(--green-700));
+    color: #fff;
+}
+.member-balance-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.member-balance-icon {
+    font-size: 3.5rem;
+    opacity: .18;
+    flex-shrink: 0;
+}
+.balance-sub {
+    display: block;
+    font-size: .78rem;
+    opacity: .72;
+    margin-top: 6px;
+    letter-spacing: .01em;
+}
+
+.member-balance-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 22px;
+}
+.strip-label { color: var(--muted); font-size: .88rem; font-weight: 600; }
+.strip-value { color: var(--green-900); font-size: 1.25rem; font-weight: 750; letter-spacing: -.02em; }
+
 /* Keep a long statement inside the viewport; the dialog footer (with Print) stays reachable. */
 .ui-dialog.statement-dialog { max-width: calc(100vw - 2rem); }
 .ui-dialog.statement-dialog .ui-dialog-content {
@@ -126,4 +340,17 @@ body {
     .dashboard-header { align-items: flex-start; flex-direction: column; }
     .action-grid, .loan-grid { grid-template-columns: 1fr; }
     .ui-dialog.statement-dialog .ui-dialog-content { max-height: calc(100vh - 9rem); }
+
+    /* Sidebar collapses to icon-only strip on small screens */
+    .admin-sidebar { width: 60px; min-width: 60px; }
+    .admin-main    { margin-left: 60px; }
+    .sidebar-brand-name,
+    .sidebar-section-label,
+    .nav-item span,
+    .nav-badge,
+    .sidebar-logout .ui-button-text { display: none !important; }
+    .nav-item { justify-content: center; padding: 12px 0; }
+    .sidebar-brand { justify-content: center; padding: 18px 0; }
+    .admin-topbar { padding: 0 16px; }
+    .admin-content { padding: 18px 14px 30px; }
 }

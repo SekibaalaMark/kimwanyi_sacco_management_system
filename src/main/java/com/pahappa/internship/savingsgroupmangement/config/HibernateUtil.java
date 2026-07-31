@@ -9,7 +9,9 @@ public class HibernateUtil {
     private static SessionFactory buildSessionFactory() {
         try {
             Configuration configuration = new Configuration().configure();
-
+            configuration.setProperty("hibernate.connection.url", "jdbc:mysql://localhost:3306/KIMWANYI_SACCO_DB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
+            configuration.setProperty("hibernate.connection.username", "root");
+            configuration.setProperty("hibernate.connection.password", "pemsmoke");
             return configuration.buildSessionFactory();
         } catch (Throwable ex) {
             System.err.println("Database Initial SessionFactory configuration failed: " + ex);

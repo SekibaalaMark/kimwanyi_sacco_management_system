@@ -106,6 +106,7 @@ public class LoanService {
 
         loan.setStatus(LoanStatus.REJECTED);
         loan.setRejectionReason(reason);
+        loan.setApprovedAt(LocalDateTime.now()); // stamp rejection time for the activity log
         loanDAO.update(loan);
     }
 
